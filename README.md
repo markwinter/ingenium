@@ -26,8 +26,9 @@ Ingestors feed market data into the system. The component produces a CloudEvent 
 which gets sent to the Broker.
 
 Ingestors can be either:
-    - One-Shot Kubernetes Jobs that read from files
-    - A long running Kubernetes Deployment that reads from a real market exchange
+
+- One-Shot Kubernetes Jobs that read from files
+- A long running Kubernetes Deployment that reads from a real market exchange
 
 ### Strategies
 
