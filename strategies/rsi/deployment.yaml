@@ -17,6 +17,8 @@ spec:
         image: rsi-strategy:0.4
         command:
           - /strategy
+          - -broker
+          - http://broker-ingress.knative-eventing.svc.cluster.local/ingenium/broker
         imagePullPolicy: IfNotPresent
         resources:
           limits:
