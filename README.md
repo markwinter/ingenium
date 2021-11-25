@@ -1,5 +1,7 @@
 # Ingenium
 
+**-- Still heavily in prototyping stage --**
+
 Ingenium is a cloud native electronic trading system built on top of Kubernetes and Knative Eventing.
 
 Ingenium is event-driven, using CloudEvents and Knative Eventing to pass data between components.
