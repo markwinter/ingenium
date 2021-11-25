@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: csv-ingestor
+  namespace: ingenium
+spec:
+  template:
+    spec:
+      containers:
+        - name: ingestor
+          image: csv-ingestor:0.4
+          imagePullPolicy: IfNotPresent
+          command:
+            - /ingestor
+            - -csv
+            - /data/PLTR.csv
+            - -broker
+            - http://broker-ingress.knative-eventing.svc.cluster.local/ingenium/broker
+      restartPolicy: Never

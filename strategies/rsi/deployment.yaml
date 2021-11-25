@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rsi-strategy
+  namespace: ingenium
+spec:
+  selector:
+    matchLabels:
+      app: rsi-strategy
+  template:
+    metadata:
+      labels:
+        app: rsi-strategy
+    spec:
+      containers:
+      - name: strategy
+        image: rsi-strategy:0.4
+        command:
+          - /strategy
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rsi-strategy
+  namespace: ingenium
+spec:
+  selector:
+    app: rsi-strategy
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: rsi-strategy
+  namespace: ingenium
+spec:
+  broker: broker
+  filter:
+    attributes:
+      type: ingenium.ingestor.data
+  subscriber:
+    ref:
+     apiVersion: v1
+     kind: Service
+     name: rsi-strategy

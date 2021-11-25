@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingenium
+---
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+ name: broker
+ namespace: ingenium
