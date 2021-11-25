@@ -56,10 +56,10 @@ func sendEvents(data []Data, broker string) {
 		event := cloudevents.NewEvent()
 		event.SetID(uuid.New().String())
 		event.SetTime(time.Now())
-		event.SetSource(fmt.Sprintf("ingenium/ingestor/csv/%s", os.Getenv("HOSTAME")))
+		event.SetSource(fmt.Sprintf("ingenium/ingestor/csv/%s", os.Getenv("HOSTNAME")))
 		event.SetType("ingenium.ingestor.data")
 
-		event.SetData(cloudevents.ApplicationJSON, map[string][]Data{"data": data})
+		event.SetData(cloudevents.ApplicationJSON, data[i])
 
 		ctx := cloudevents.ContextWithTarget(context.Background(), broker)
 
