@@ -15,14 +15,42 @@ There will also be a web component in the future to view and manage the current 
 
 ## Components
 
+
+           1.                                         2.
+          ┌────────────┐                   ┌────────────┐
+          │            │                   │            │
+          │  Ingestor  │       Data Event  │  Strategy  │
+          │            │     ┌─────────────►            │
+          └──────┬─────┘     │             └─────┬──────┘
+                 │           │                   │
+                 │           │                   │
+                 │         ┌─┴────────┐          │
+                 │         │          │          │
+                 └─────────►  Broker  ◄──────────┘
+               Data Event  │          │     Signal Event
+                           └─────────┬┘
+                                     │
+                                     └───────────────┐
+                                                     │Signal Event
+                                                     │
+    ┌───────────────────┐ Execution Event ┌──────────▼──┐
+    │                   ├─────────────────►             │
+    │  Order Executor   │                 │  Portfolio  │
+    │                   ◄─────────────────┤             │
+    └───────────────────┘   Order Event   └─────────────┘
+     4.                                               3.
+
+
 ### Broker
+
+The broker handles receiving and sending events between components.
 
 By default and for testing the broker is Knative Eventing's Multi-Tenant Channel Broker using in-memory channels.
 For production systems this can be easily changed to something more suitable like Kafka or GCP PubSub.
 
 ### Ingestors
 
-Ingestors feed market data into the system. The component produces a CloudEvent for each market data
+Ingestors feed market data into the system. The component produces a data event for each market data
 which gets sent to the Broker.
 
 Ingestors can be either:
@@ -32,27 +60,46 @@ Ingestors can be either:
 
 ### Strategies
 
-Strategies receive market data events from Ingestors (via the Broker) and produce signals based on an implemented
-trading strategy. This signal is created as a CloudEvent which gets set to the Broker.
+Strategies receive market data events from Ingestors and produce signal events based on an implemented
+trading strategy.
 
 ### Portfolios
 
-Portfolios receive signal events from Strategies (via the Broker) and decide based on several factors such as
-remaining balance, risk assessment, outstanding orders, etc. whether to generate a market order event. When generating a market
+Portfolios receive signal events from Strategies and decide based on several factors such as
+remaining balance, risk assessment etc. whether to generate a market order event. When generating a market
 order appropriate order sizing also takes place. Portfolios also manage open positions.
 
 ### Order Executors
 
-Order Executors receive market order events from Portfolios (via the Broker) and execute the appropriate order
+Order Executors receive market order events from Portfolios and execute the appropriate order
 on the exchange. They also return order execution events back to the Portfolio.
 
 ## Events
 
-All events are CloudEvents generated using the CloudEvents SDKs. Below is a list of all Events in the system and their spec.
+All events are CloudEvents generated using the CloudEvents SDKs. Currently they all serialized to JSON.
+
+Below is a list of all Events in the system and their spec.
 
 ### Market Data
 
+```GO
+type DataEvent struct {
+	Period     string
+	OpenPrice  string
+	ClosePrice string
+	MaxPrice   string
+	MinPrice   string
+	Volume     string
+}
+```
+
 ### Signal
+
+```GO
+type Signal struct {
+	signal string
+}
+```
 
 ### Market Order
 
