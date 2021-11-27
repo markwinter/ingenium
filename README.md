@@ -1,6 +1,12 @@
 # Ingenium
 
-**-- Still heavily in prototyping stage --**
+### Prototyping Stage
+
+This project is still in prototype stage.
+
+During the prototype stage there will be a lot of code duplication. Later on it will be refactored away into a library that will enable fast component development.
+
+---
 
 Ingenium is a cloud native electronic trading system built on top of Kubernetes and Knative Eventing.
 
@@ -88,27 +94,41 @@ Below is a list of all Events in the system and their spec.
 
 ### Market Data
 
+Type: `ingenium.ingestor.data`
+
 ```GO
 type DataEvent struct {
   Symbol     string
-	Period     string
-	OpenPrice  string
-	ClosePrice string
-	MaxPrice   string
-	MinPrice   string
-	Volume     string
+  Period     string
+  OpenPrice  string
+  ClosePrice string
+  MaxPrice   string
+  MinPrice   string
+  Volume     string
 }
 ```
 
 ### Signal
 
+Type: `ingenium.strategy.signal`
+
 ```GO
 type Signal struct {
   Symbol string
-	Signal string
+  Signal string
 }
 ```
 
 ### Market Order
 
+Type: `ingenium.portfolio.order`
+
+```GO
+```
+
 ### Order Execution
+
+Type: `ingenium.executor.execution`
+
+```GO
+```
