@@ -15,6 +15,8 @@ There will also be a web component in the future to view and manage the current 
 
 ## Components
 
+A simplified diagram of the system is below. In reality you can have multiple of each component running at the same time.
+
 
            1.                                         2.
           ┌────────────┐                   ┌────────────┐
@@ -45,8 +47,12 @@ There will also be a web component in the future to view and manage the current 
 
 The broker handles receiving and sending events between components.
 
-By default and for testing the broker is Knative Eventing's Multi-Tenant Channel Broker using in-memory channels.
-For production systems this can be easily changed to something more suitable like Kafka or GCP PubSub.
+By default Kafka is used for the broker.
+This can be changed to something else like GCP PubSub based on your needs.
+Keep in mind that message ordering is generally required for strategies to work correctly.
+
+If you have multiple of the same component e.g. Strategies, the same event will be delivered to each component.
+When you create a `Trigger`, Kafka will send any existing messages retained in the topic.
 
 ### Ingestors
 
@@ -84,6 +90,7 @@ Below is a list of all Events in the system and their spec.
 
 ```GO
 type DataEvent struct {
+  Symbol     string
 	Period     string
 	OpenPrice  string
 	ClosePrice string
@@ -97,7 +104,8 @@ type DataEvent struct {
 
 ```GO
 type Signal struct {
-	signal string
+  Symbol string
+	Signal string
 }
 ```
 

@@ -21,9 +21,11 @@ type RsiStrategy struct {
 	indicator techan.Indicator
 	record    *techan.TradingRecord
 	index     int
+	client    cloudevents.Client
 }
 
 type DataEvent struct {
+	Symbol     string
 	Period     string
 	OpenPrice  string
 	ClosePrice string
@@ -32,7 +34,7 @@ type DataEvent struct {
 	Volume     string
 }
 
-func MakeRsiStrategy() *RsiStrategy {
+func MakeRsiStrategy() RsiStrategy {
 	series := techan.NewTimeSeries()
 	closePrices := techan.NewClosePriceIndicator(series)
 	rsi := techan.NewRelativeStrengthIndexIndicator(closePrices, 14)
@@ -55,20 +57,24 @@ func MakeRsiStrategy() *RsiStrategy {
 		ExitRule:       exitRule,
 	}
 
-	return &RsiStrategy{
+	client, err := cloudevents.NewClientHTTP()
+	if err != nil {
+		log.Fatalf("failed to create client, %v", err)
+	}
+
+	return RsiStrategy{
 		series:    series,
 		strategy:  strategy,
 		indicator: rsi,
 		record:    techan.NewTradingRecord(),
-		index:     0,
+		client:    client,
 	}
 }
 
-var rsiStrategy *RsiStrategy
-var client cloudevents.Client
+var rsiStrategy RsiStrategy = MakeRsiStrategy()
 var broker string
 
-func sendEvent(signal string) {
+func sendEvent(symbol, signal string) {
 	event := cloudevents.NewEvent()
 	event.SetID(uuid.New().String())
 	event.SetTime(time.Now())
@@ -78,7 +84,7 @@ func sendEvent(signal string) {
 	event.SetData(cloudevents.ApplicationJSON, map[string]string{"signal": signal})
 
 	ctx := cloudevents.ContextWithTarget(context.Background(), broker)
-	if result := client.Send(ctx, event); cloudevents.IsUndelivered(result) {
+	if result := rsiStrategy.client.Send(ctx, event); cloudevents.IsUndelivered(result) {
 		log.Printf("failed to send, %v", result)
 	}
 }
@@ -107,11 +113,11 @@ func receive(event cloudevents.Event) {
 	rsiStrategy.series.AddCandle(candle)
 
 	if rsiStrategy.strategy.ShouldEnter(rsiStrategy.index, rsiStrategy.record) {
-		log.Printf("[RSI] LONG | RSI: %v", rsiStrategy.indicator.Calculate(rsiStrategy.index))
-		sendEvent("long")
+		log.Printf("[RSI] %s | LONG | RSI: %v", dataEvent.Symbol, rsiStrategy.indicator.Calculate(rsiStrategy.index))
+		sendEvent(dataEvent.Symbol, "long")
 	} else if rsiStrategy.strategy.ShouldExit(rsiStrategy.index, rsiStrategy.record) {
-		log.Printf("[RSI] SHORT | RSI: %v", rsiStrategy.indicator.Calculate(rsiStrategy.index))
-		sendEvent("short")
+		log.Printf("[RSI] %s | SHORT | RSI: %v", dataEvent.Symbol, rsiStrategy.indicator.Calculate(rsiStrategy.index))
+		sendEvent(dataEvent.Symbol, "short")
 	}
 
 	rsiStrategy.index++
@@ -127,10 +133,7 @@ func main() {
 	}
 	broker = *b
 
-	rsiStrategy = MakeRsiStrategy()
-
-	var err error
-	client, err = cloudevents.NewClientHTTP()
+	client, err := cloudevents.NewClientHTTP()
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}

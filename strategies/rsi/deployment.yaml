@@ -14,11 +14,11 @@ spec:
     spec:
       containers:
       - name: strategy
-        image: rsi-strategy:0.4
+        image: rsi-strategy:0.12
         command:
           - /strategy
           - -broker
-          - http://broker-ingress.knative-eventing.svc.cluster.local/ingenium/broker
+          - http://kafka-broker-ingress.knative-eventing.svc.cluster.local/ingenium/broker
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -45,6 +45,8 @@ kind: Trigger
 metadata:
   name: rsi-strategy
   namespace: ingenium
+  annotations:
+     kafka.eventing.knative.dev/delivery.order: ordered
 spec:
   broker: broker
   filter:

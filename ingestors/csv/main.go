@@ -14,6 +14,7 @@ import (
 )
 
 type Data struct {
+	Symbol     string
 	Period     string
 	OpenPrice  string
 	ClosePrice string
@@ -25,6 +26,7 @@ type Data struct {
 func main() {
 	csvPath := flag.String("csv", "", "Path to csv file")
 	broker := flag.String("broker", "", "URL of broker to send events to")
+	symbol := flag.String("symbol", "", "Security symbol")
 
 	flag.Parse()
 
@@ -36,9 +38,15 @@ func main() {
 		log.Fatalf("broker url was not given")
 	}
 
+	if *symbol == "" {
+		log.Fatalf("symbol was not given")
+	}
+
 	log.Printf("Reading csv file %s", *csvPath)
-	data := readCsv(*csvPath)
-	log.Printf("Read %d records", len(data))
+	records := readCsv(*csvPath)
+	log.Printf("Read %d records", len(records))
+
+	data := parseRecords(records, *symbol)
 
 	log.Printf("Sending events to %s", *broker)
 	sendEvents(data, *broker)
@@ -69,7 +77,24 @@ func sendEvents(data []Data, broker string) {
 	}
 }
 
-func readCsv(path string) []Data {
+func parseRecords(records [][]string, symbol string) []Data {
+	var data []Data
+	for i := 1; i < len(records); i++ { // start at 1 to skip header row
+		data = append(data, Data{
+			Symbol:     symbol,
+			Period:     records[i][0],
+			OpenPrice:  records[i][1],
+			ClosePrice: records[i][4],
+			MaxPrice:   records[i][2],
+			MinPrice:   records[i][3],
+			Volume:     records[i][6],
+		})
+	}
+
+	return data
+}
+
+func readCsv(path string) [][]string {
 	f, err := os.Open(path)
 	if err != nil {
 		log.Fatal(err)
@@ -82,23 +107,5 @@ func readCsv(path string) []Data {
 		log.Fatal(err)
 	}
 
-	var data []Data
-	for i := 1; i < len(records); i++ {
-		date, err := time.Parse("2006-01-02", records[i][0])
-		if err != nil {
-			log.Printf("Invalid date: %v\n%v", err, records[i])
-			continue
-		}
-
-		data = append(data, Data{
-			Period:     date.String(),
-			OpenPrice:  records[i][1],
-			ClosePrice: records[i][4],
-			MaxPrice:   records[i][2],
-			MinPrice:   records[i][3],
-			Volume:     records[i][6],
-		})
-	}
-
-	return data
+	return records
 }

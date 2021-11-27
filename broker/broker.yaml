@@ -1,10 +1,13 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: ingenium
----
 apiVersion: eventing.knative.dev/v1
 kind: Broker
 metadata:
- name: broker
- namespace: ingenium
+  annotations:
+    eventing.knative.dev/broker.class: Kafka
+  name: broker
+  namespace: ingenium
+spec:
+  config:
+    apiVersion: v1
+    kind: ConfigMap
+    name: kafka-broker-config
+    namespace: knative-eventing
