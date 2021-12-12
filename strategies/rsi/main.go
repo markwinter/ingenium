@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	ingenium "github.com/markwinter/ingenium/pkg"
 	"log"
 	"os"
 	"time"
@@ -24,32 +25,16 @@ type RsiStrategy struct {
 	client    cloudevents.Client
 }
 
-type DataEvent struct {
-	Symbol     string
-	Period     string
-	OpenPrice  string
-	ClosePrice string
-	MaxPrice   string
-	MinPrice   string
-	Volume     string
-}
-
 func MakeRsiStrategy() RsiStrategy {
 	series := techan.NewTimeSeries()
 	closePrices := techan.NewClosePriceIndicator(series)
 	rsi := techan.NewRelativeStrengthIndexIndicator(closePrices, 14)
 
 	// Enter position when RSI goes below 30
-	entryRule := techan.And(
-		techan.NewCrossDownIndicatorRule(rsi, techan.NewConstantIndicator(30)),
-		techan.PositionNewRule{},
-	)
+	entryRule := techan.NewCrossDownIndicatorRule(rsi, techan.NewConstantIndicator(30))
 
 	// Exit position when RSI goes above 70
-	exitRule := techan.And(
-		techan.NewCrossUpIndicatorRule(techan.NewConstantIndicator(70), rsi),
-		techan.PositionOpenRule{},
-	)
+	exitRule := techan.NewCrossUpIndicatorRule(techan.NewConstantIndicator(70), rsi)
 
 	strategy := techan.RuleStrategy{
 		UnstablePeriod: 14,
@@ -81,7 +66,7 @@ func sendEvent(symbol, signal string) {
 	event.SetSource(fmt.Sprintf("ingenium/strategy/rsi/%s", os.Getenv("HOSTNAME")))
 	event.SetType("ingenium.strategy.signal")
 
-	event.SetData(cloudevents.ApplicationJSON, map[string]string{"signal": signal})
+	event.SetData(cloudevents.ApplicationJSON, ingenium.SignalEvent{Signal: signal, Symbol: symbol})
 
 	ctx := cloudevents.ContextWithTarget(context.Background(), broker)
 	if result := rsiStrategy.client.Send(ctx, event); cloudevents.IsUndelivered(result) {
@@ -90,7 +75,7 @@ func sendEvent(symbol, signal string) {
 }
 
 func receive(event cloudevents.Event) {
-	var dataEvent DataEvent
+	var dataEvent ingenium.DataEvent
 	if err := json.Unmarshal(event.Data(), &dataEvent); err != nil {
 		log.Printf("[%s] Failed to unmarshal event: %v", event.ID(), err)
 		return

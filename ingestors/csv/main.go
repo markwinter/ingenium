@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	ingenium "github.com/markwinter/ingenium/pkg"
 	"log"
 	"os"
 	"time"
@@ -12,16 +13,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 )
-
-type Data struct {
-	Symbol     string
-	Period     string
-	OpenPrice  string
-	ClosePrice string
-	MaxPrice   string
-	MinPrice   string
-	Volume     string
-}
 
 func main() {
 	csvPath := flag.String("csv", "", "Path to csv file")
@@ -54,7 +45,7 @@ func main() {
 	log.Print("Finished")
 }
 
-func sendEvents(data []Data, broker string) {
+func sendEvents(data []ingenium.DataEvent, broker string) {
 	client, err := cloudevents.NewClientHTTP()
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
@@ -77,10 +68,10 @@ func sendEvents(data []Data, broker string) {
 	}
 }
 
-func parseRecords(records [][]string, symbol string) []Data {
-	var data []Data
+func parseRecords(records [][]string, symbol string) []ingenium.DataEvent {
+	var data []ingenium.DataEvent
 	for i := 1; i < len(records); i++ { // start at 1 to skip header row
-		data = append(data, Data{
+		data = append(data, ingenium.DataEvent{
 			Symbol:     symbol,
 			Period:     records[i][0],
 			OpenPrice:  records[i][1],

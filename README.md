@@ -124,6 +124,21 @@ type Signal struct {
 Type: `ingenium.portfolio.order`
 
 ```GO
+type Order struct {
+	Side     Side
+	Quantity big.Decimal
+	Symbol   string
+	Type     OrderType
+}
+
+type OrderType string
+type Side string
+
+const (
+	MARKET OrderType = "MARKET"
+	BUY    Side      = "BUY"
+	SELL   Side      = "SELL"
+)
 ```
 
 ### Order Execution
