@@ -1,3 +1,3 @@
-module github.com/markwinter/ingenium
+module github.com/markwinter/ingenium/pkg
 
 go 1.17
