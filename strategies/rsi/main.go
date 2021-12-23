@@ -64,7 +64,7 @@ func sendEvent(symbol, signal string) {
 	event.SetID(uuid.New().String())
 	event.SetTime(time.Now())
 	event.SetSource(fmt.Sprintf("ingenium/strategy/rsi/%s", os.Getenv("HOSTNAME")))
-	event.SetType("ingenium.strategy.signal")
+	event.SetType(ingenium.SignalEventType)
 
 	event.SetData(cloudevents.ApplicationJSON, ingenium.SignalEvent{Signal: signal, Symbol: symbol})
 

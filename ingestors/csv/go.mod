@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/google/uuid v1.3.0
-	github.com/markwinter/ingenium/pkg v0.0.0-20211212070206-8e99a9dc9f1e
+	github.com/markwinter/ingenium/pkg v0.0.0-20211223142206-e9f4dbd484bd
 )
 
 require (
