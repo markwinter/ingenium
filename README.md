@@ -29,16 +29,16 @@ A simplified diagram of the system is below. In reality you can have multiple of
           │            │                   │            │
           │  Ingestor  │       Data Event  │  Strategy  │
           │            │     ┌─────────────►            │
-          └──────┬─────┘     │             └─────┬──────┘
-                 │           │                   │
-                 │           │                   │
-                 │         ┌─┴────────┐          │
-                 │         │          │          │
-                 └─────────►  Broker  ◄──────────┘
-               Data Event  │          │     Signal Event
-                           └─────────┬┘
-                                     │
-                                     └───────────────┐
+          └──────┬─────┘     │             └───────────┬┘
+                 │           │                         │
+                 │           │                         │
+                 │         ┌─┴──────────────┐          │
+                 │         │                │          │
+                 └─────────►  Event Broker  ◄──────────┘
+               Data Event  │                │     Signal Event
+                           └───────────────┬┘
+                                           │
+                                           └─────────┐
                                                      │Signal Event
                                                      │
     ┌───────────────────┐ Execution Event ┌──────────▼──┐
@@ -49,9 +49,9 @@ A simplified diagram of the system is below. In reality you can have multiple of
      4.                                               3.
 
 
-### Broker
+### Event Broker
 
-The broker handles receiving and sending events between components.
+The event broker handles receiving and sending events between components.
 
 By default Kafka is used for the broker.
 This can be changed to something else like GCP PubSub based on your needs.
