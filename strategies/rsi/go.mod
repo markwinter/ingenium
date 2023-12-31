@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.6.1
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.3.0
 	github.com/markwinter/ingenium/pkg v0.0.0-20211223142206-e9f4dbd484bd
 	github.com/sdcoffey/big v0.7.0
 	github.com/sdcoffey/techan v0.12.1

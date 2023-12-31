@@ -36,3 +36,7 @@ type OrderEvent struct {
 	Symbol   string
 	Type     OrderType
 }
+
+type NewEventType struct {
+	Key string
+}
