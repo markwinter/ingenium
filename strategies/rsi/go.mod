@@ -1,6 +1,6 @@
 module github.com/markwinter/ingenium/strategies/rsi
 
-go 1.17
+go 1.21
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.6.1
