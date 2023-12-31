@@ -66,7 +66,11 @@ func sendEvent(symbol, signal string) {
 	event.SetSource(fmt.Sprintf("ingenium/strategy/rsi/%s", os.Getenv("HOSTNAME")))
 	event.SetType(ingenium.SignalEventType)
 
-	event.SetData(cloudevents.ApplicationJSON, ingenium.SignalEvent{Signal: signal, Symbol: symbol})
+	err := event.SetData(cloudevents.ApplicationJSON, ingenium.SignalEvent{Signal: signal, Symbol: symbol})
+	if err != nil {
+		log.Printf("Faied to set event data: %v", err)
+		return
+	}
 
 	ctx := cloudevents.ContextWithTarget(context.Background(), broker)
 	if result := rsiStrategy.client.Send(ctx, event); cloudevents.IsUndelivered(result) {
