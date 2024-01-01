@@ -3,6 +3,7 @@ package ingenium
 type OrderType string
 type Side string
 type Signal string
+type DataType string
 
 const (
 	MARKET          OrderType = "MARKET"
@@ -13,6 +14,8 @@ const (
 	DataEventType             = "ingenium.ingestor.data"
 	SignalEventType           = "ingenium.strategy.signal"
 	OrderEventType            = "ingenium.portfolio.order"
+
+	DataTypeOhlc = "data.type.ohlc"
 )
 
 type SignalEvent struct {
@@ -21,13 +24,19 @@ type SignalEvent struct {
 }
 
 type DataEvent struct {
-	Symbol     string
-	Period     string
-	OpenPrice  string
-	ClosePrice string
-	MaxPrice   string
-	MinPrice   string
-	Volume     string
+	Type      DataType
+	Symbol    string
+	Timestamp string
+	Data      any
+}
+
+type DataOhlc struct {
+	Open   string
+	High   string
+	Low    string
+	Close  string
+	Volume string
+	Period string // Period defines the time range of this data e.g. 5 min candle
 }
 
 type OrderEvent struct {

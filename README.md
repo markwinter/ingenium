@@ -90,7 +90,7 @@ on the exchange. They also return order execution events back to the Portfolio.
 
 All events are CloudEvents generated using the CloudEvents SDKs. Currently they all serialized to JSON.
 
-Below is a list of all Events in the system and their spec.
+Below is a list of all Events in the system and their spec
 
 ### Market Data
 
@@ -98,13 +98,18 @@ Type: `ingenium.ingestor.data`
 
 ```GO
 type DataEvent struct {
-  Symbol     string
-  Period     string
-  OpenPrice  string
-  ClosePrice string
-  MaxPrice   string
-  MinPrice   string
-  Volume     string
+  Type      DataType
+  Symbol    string
+  Timestamp string
+  Data      any
+}
+
+type DataOhlc struct {
+  Open   string
+  High   string
+  Low    string
+  Close  string
+  Volume string
 }
 ```
 
