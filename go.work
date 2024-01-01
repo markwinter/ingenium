@@ -1,7 +1,9 @@
 go 1.21
 
 use (
+	./hack/cloudevent-printer
 	./ingestors/csv
+	./ingestors/yahoo
 	./pkg
 	./portfolios/example
 	./strategies/rsi

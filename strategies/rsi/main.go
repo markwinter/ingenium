@@ -85,7 +85,10 @@ func receive(event cloudevents.Event) {
 		return
 	}
 
-	date, err := time.Parse("2006-01-02", dataEvent.Period)
+	// Check the dataEvent.Type if you are uncertain about the data type
+	data := dataEvent.Data.(ingenium.DataOhlc)
+
+	date, err := time.Parse("2006-01-02", data.Period)
 	if err != nil {
 		log.Printf("[%s] Failed to parse date: %v", event.ID(), err)
 		return
@@ -93,11 +96,11 @@ func receive(event cloudevents.Event) {
 	period := techan.NewTimePeriod(date, time.Hour*24)
 
 	candle := techan.NewCandle(period)
-	candle.OpenPrice = big.NewFromString(dataEvent.OpenPrice)
-	candle.ClosePrice = big.NewFromString(dataEvent.ClosePrice)
-	candle.MaxPrice = big.NewFromString(dataEvent.MaxPrice)
-	candle.MinPrice = big.NewFromString(dataEvent.MinPrice)
-	candle.Volume = big.NewFromString(dataEvent.Volume)
+	candle.OpenPrice = big.NewFromString(data.Open)
+	candle.ClosePrice = big.NewFromString(data.Close)
+	candle.MaxPrice = big.NewFromString(data.High)
+	candle.MinPrice = big.NewFromString(data.Low)
+	candle.Volume = big.NewFromString(data.Volume)
 
 	rsiStrategy.series.AddCandle(candle)
 
