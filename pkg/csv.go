@@ -3,15 +3,16 @@ package ingenium
 import (
 	"context"
 	"encoding/csv"
+	"fmt"
 	"log"
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
-// SendCsvFile is a helper function that reads a CSV file containing OHLC data and sends all the events to the broker.
+// IngestCsvFile is a helper function that reads a CSV file containing OHLC data and sends all the events to the broker.
 // You must also supply a function that converts a row of csv data to an ingenium.DataEvent
-func SendCsvFile(file string, sourceName, broker string, converter func(record []string) DataEvent) error {
+func IngestCsvFile(file string, ingestorName, broker string, converter func(record []string) DataEvent) error {
 	records, err := readCsv(file)
 	if err != nil {
 		return err
@@ -24,7 +25,7 @@ func SendCsvFile(file string, sourceName, broker string, converter func(record [
 
 	for _, record := range records {
 		data := converter(record)
-		event, err := ConvertDataEvent(data, sourceName)
+		event, err := ConvertDataEvent(data, fmt.Sprintf("ingenium/ingestor/csv/%s", ingestorName))
 		if err != nil {
 			log.Printf("failed to convert data to cloudevent: %v", err)
 		}

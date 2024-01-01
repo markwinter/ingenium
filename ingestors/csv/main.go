@@ -2,18 +2,13 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
-	"os"
 
 	ingenium "github.com/markwinter/ingenium/pkg"
 )
 
-var (
-	sourceName = fmt.Sprintf("ingenium/ingestor/csv/%s", os.Getenv("HOSTNAME"))
-)
-
 func main() {
+	ingestorName := flag.String("name", "", "Name of this ingestor")
 	csvPath := flag.String("csv", "", "Path to csv file")
 	broker := flag.String("broker", "", "URL of broker to send events to")
 	symbol := flag.String("symbol", "", "Security symbol")
@@ -24,6 +19,10 @@ func main() {
 		log.Fatalf("csv file path not given")
 	}
 
+	if *ingestorName == "" {
+		log.Fatalf("name was not given")
+	}
+
 	if *broker == "" {
 		log.Fatalf("broker url was not given")
 	}
@@ -32,7 +31,7 @@ func main() {
 		log.Fatalf("symbol was not given")
 	}
 
-	err := ingenium.SendCsvFile(*csvPath, sourceName, *broker, func(record []string) ingenium.DataEvent {
+	err := ingenium.IngestCsvFile(*csvPath, *ingestorName, *broker, func(record []string) ingenium.DataEvent {
 		return ingenium.DataEvent{
 			Type:      ingenium.DataTypeOhlc,
 			Symbol:    *symbol,
