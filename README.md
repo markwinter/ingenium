@@ -4,15 +4,13 @@
 
 This project is still in prototype stage.
 
-During the prototype stage there will be a lot of code duplication. Later on it will be refactored away into a library that will enable fast component development.
-
 ---
 
-Ingenium is a cloud native electronic trading system built on top of Kubernetes and Knative Eventing.
+Ingenium is a cloud native electronic trading system built on top of Kubernetes and Knative Eventing. It provides a common library (in `/pkg`) that allows quick creation of new components. It's expected that end users create their own components, e.g. ingestors, using the common library that handles correct typing, formatting etc. so that components can easily communicate with each other.
 
 Ingenium is event-driven, using CloudEvents and Knative Eventing to pass data between components.
 
-Ingenium comes with telemetry built in using OpenTelemetry.
+Ingenium will come with telemetry built in using OpenTelemetry.
 
 There will also be a web component in the future to view and manage the current state of the system such as
 - View currently running components e.g. enabled strategies, data ingestors
@@ -65,9 +63,9 @@ When you create a `Trigger`, Kafka will send any existing messages retained in t
 Ingestors feed market data into the system. The component produces a data event for each market data
 which gets sent to the Broker.
 
-Ingestors can be either:
+Examples of ingestors:
 
-- One-Shot Kubernetes Jobs that read from files
+- One-Shot Kubernetes Job that reads historical data from a CSV file or an API
 - A long running Kubernetes Deployment that reads from a real market exchange
 
 ### Strategies
