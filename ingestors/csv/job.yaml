@@ -11,11 +11,11 @@ spec:
           image: csv-ingestor:0.9
           imagePullPolicy: IfNotPresent
           command:
-            - /ingestor
-            - -csv
-            - /data/PLTR.csv
-            - -broker
-            - http://kafka-broker-ingress.knative-eventing.svc.cluster.local/ingenium/broker
-            - -symbol
-            - PLTR
+          - /ingestor
+          - -csv
+          - /data/PLTR.csv
+          - -broker
+          - http://kafka-broker-ingress.knative-eventing.svc.cluster.local/ingenium/broker
+          - -symbol
+          - PLTR
       restartPolicy: Never
