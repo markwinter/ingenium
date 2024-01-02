@@ -10,10 +10,10 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
 	ingenium "github.com/markwinter/ingenium/pkg"
 	"github.com/sdcoffey/big"
 	"github.com/sdcoffey/techan"
+	"github.com/segmentio/ksuid"
 )
 
 type RsiStrategy struct {
@@ -61,7 +61,7 @@ var broker string
 
 func sendEvent(symbol, signal string) {
 	event := cloudevents.NewEvent()
-	event.SetID(uuid.New().String())
+	event.SetID(fmt.Sprintf("signal_%s", ksuid.New()))
 	event.SetTime(time.Now())
 	event.SetSource(fmt.Sprintf("ingenium/strategy/rsi/%s", os.Getenv("HOSTNAME")))
 	event.SetType(ingenium.SignalEventType)

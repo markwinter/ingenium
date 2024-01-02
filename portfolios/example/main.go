@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	ingenium "github.com/markwinter/ingenium/pkg"
 	"log"
 	"os"
 	"strings"
 	"time"
 
+	ingenium "github.com/markwinter/ingenium/pkg"
+	"github.com/segmentio/ksuid"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
 	"github.com/sdcoffey/big"
 	"github.com/sdcoffey/techan"
 )
@@ -60,12 +61,15 @@ func generateOrder(side ingenium.Side, symbol string, quantity big.Decimal) inge
 
 func sendOrder(order ingenium.OrderEvent) {
 	event := cloudevents.NewEvent()
-	event.SetID(uuid.New().String())
+	event.SetID(fmt.Sprintf("order_%s", ksuid.New()))
 	event.SetTime(time.Now())
 	event.SetSource(fmt.Sprintf("ingenium/portfolio/example/%s", os.Getenv("HOSTNAME")))
 	event.SetType("ingenium.portfolio.order")
 
-	event.SetData(cloudevents.ApplicationJSON, order)
+	if err := event.SetData(cloudevents.ApplicationJSON, order); err != nil {
+		log.Printf("failed to set data on event: %v", err)
+		return
+	}
 
 	ctx := cloudevents.ContextWithTarget(context.Background(), broker)
 	if result := portfolio.client.Send(ctx, event); cloudevents.IsUndelivered(result) {

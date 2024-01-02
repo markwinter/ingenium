@@ -1,16 +1,19 @@
 package ingenium
 
 import (
+	"fmt"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 )
 
 // ConvertDataEvent converts an Ingenium DataEvent to a CloudEvent
 func ConvertDataEvent(data DataEvent, sourceName string) (cloudevents.Event, error) {
+	id := fmt.Sprintf("data_%s", ksuid.New())
+
 	event := cloudevents.NewEvent()
-	event.SetID(uuid.New().String())
+	event.SetID(id)
 	event.SetTime(time.Now())
 	event.SetSource(sourceName)
 	event.SetType(DataEventType)
