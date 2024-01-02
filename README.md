@@ -6,9 +6,9 @@ This project is still in prototype stage.
 
 ---
 
-Ingenium is a cloud native electronic trading system built on top of Kubernetes and Knative Eventing. It provides a common library (in `/pkg`) that allows quick creation of new components. It's expected that end users create their own components, e.g. ingestors, using the common library that handles correct typing, formatting etc. so that components can easily communicate with each other.
+Ingenium is a cloud native electronic trading system built on top of Kubernetes and Knative Eventing. It provides a common library (in `/pkg`) that allows quick creation of new components. It's expected that end users create their own components, e.g. ingestors, using the common library that handles correct typing, formatting etc. so that components can easily communicate with each other. Whilst the current example components and library in this repository are written in Golang, you could create your own in any language or a mix of languages. For example, you could have Golang ingestors and Python based strategies. As long as you can receive and send CloudEvents it will work.
 
-Ingenium is event-driven, using CloudEvents and Knative Eventing to pass data between components.
+Ingenium is event-driven, using [CloudEvents](https://cloudevents.io/) and [Knative Eventing](https://knative.dev/docs/eventing/) to pass data between components.
 
 Ingenium will come with telemetry built in using OpenTelemetry.
 
