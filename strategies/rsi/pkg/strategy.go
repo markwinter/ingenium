@@ -14,7 +14,7 @@ import (
 )
 
 type RsiStrategy struct {
-	strategyClient *strategy.StrategyClient
+	*strategy.StrategyClient
 
 	minWindow int
 	buyAt     float64
@@ -24,21 +24,17 @@ type RsiStrategy struct {
 }
 
 func NewRsiStrategy(symbols ...string) *RsiStrategy {
-	strategy := &RsiStrategy{
-		strategyClient: strategy.NewStrategy(),
-		minWindow:      2,
-		buyAt:          5,
-		sellAt:         95,
-		closingPrices:  make(map[string][]float64),
+	s := &RsiStrategy{
+		minWindow:     2,
+		buyAt:         5,
+		sellAt:        95,
+		closingPrices: make(map[string][]float64),
 	}
 
-	for _, symbol := range symbols {
-		if err := strategy.strategyClient.SubscribeToSymbol(symbol, strategy.Receive); err != nil {
-			log.Printf("failed to subscribe to symbol data: %v", err)
-		}
-	}
+	client := strategy.NewStrategyClient(s, symbols)
+	s.StrategyClient = client
 
-	return strategy
+	return s
 }
 
 func (s *RsiStrategy) Receive(dataEvent *ingenium.DataEvent) {
@@ -65,7 +61,7 @@ func (s *RsiStrategy) Receive(dataEvent *ingenium.DataEvent) {
 			Timestamp: time.Now(),
 		}
 
-		if err := s.strategyClient.SendSignalEvent(event); err != nil {
+		if err := s.SendSignalEvent(event); err != nil {
 			log.Printf("failed sending signal: %v", err)
 		}
 	} else if rsi[len(rsi)-1] > s.sellAt {
@@ -77,7 +73,7 @@ func (s *RsiStrategy) Receive(dataEvent *ingenium.DataEvent) {
 			Timestamp: time.Now(),
 		}
 
-		if err := s.strategyClient.SendSignalEvent(event); err != nil {
+		if err := s.SendSignalEvent(event); err != nil {
 			log.Printf("failed sending signal: %v", err)
 		}
 	}
@@ -91,5 +87,5 @@ func (s *RsiStrategy) Run() {
 }
 
 func (s *RsiStrategy) Cleanup() {
-	s.strategyClient.Close()
+	s.Close()
 }

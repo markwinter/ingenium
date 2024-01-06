@@ -25,7 +25,7 @@ func WithNatsServer(server string) StrategyOption {
 	}
 }
 
-func NewStrategy(opts ...StrategyOption) *StrategyClient {
+func NewStrategyClient(strategy ingenium.Strategy, symbols []string, opts ...StrategyOption) *StrategyClient {
 	var natsServer string
 
 	natsServer = os.Getenv("NATS_SERVER")
@@ -53,6 +53,16 @@ func NewStrategy(opts ...StrategyOption) *StrategyClient {
 	}
 	i.ec = ec
 
+	for _, symbol := range symbols {
+		subject := fmt.Sprintf("%s.%s", ingenium.DataEventType, strings.ToLower(symbol))
+
+		if _, err := i.ec.Subscribe(subject, func(d *ingenium.DataEvent) {
+			strategy.Receive(d)
+		}); err != nil {
+			log.Printf("failed to subscribe to symbol: %v", err)
+		}
+	}
+
 	return i
 }
 
@@ -64,12 +74,4 @@ func (c *StrategyClient) Close() {
 func (c *StrategyClient) SendSignalEvent(e ingenium.SignalEvent) error {
 	subject := strings.ToLower(fmt.Sprintf("%s.%s", ingenium.SignalEventType, e.Symbol))
 	return c.ec.Publish(subject, e)
-}
-
-func (c *StrategyClient) SubscribeToSymbol(symbol string, callback func(*ingenium.DataEvent)) error {
-	_, err := c.ec.Subscribe(fmt.Sprintf("%s.%s", ingenium.DataEventType, strings.ToLower(symbol)), func(d *ingenium.DataEvent) {
-		callback(d)
-	})
-
-	return err
 }

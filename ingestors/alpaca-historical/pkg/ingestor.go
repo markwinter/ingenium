@@ -18,7 +18,7 @@ const (
 )
 
 type AlpacaHistoricalIngestor struct {
-	ingestorClient *ingestor.IngestorClient
+	*ingestor.IngestorClient
 
 	symbol    string
 	timeframe marketdata.TimeFrame
@@ -33,7 +33,7 @@ func NewAlpacaHistoricalIngestor(symbol string, startDate, endDate time.Time, ti
 	}
 
 	i := &AlpacaHistoricalIngestor{
-		ingestorClient: ingestor.NewIngestor(),
+		IngestorClient: ingestor.NewIngestorClient(),
 		symbol:         symbol,
 		startDate:      startDate,
 		endDate:        endDate,
@@ -62,14 +62,14 @@ func (i AlpacaHistoricalIngestor) IngestData() {
 		d := i.convertToDataEvent(bar)
 		//fmt.Printf("%+v\n", d)
 
-		if err := i.ingestorClient.SendDataEvent(d); err != nil {
+		if err := i.SendDataEvent(d); err != nil {
 			log.Printf("failed sending data event: %v", err)
 		}
 	}
 }
 
 func (i AlpacaHistoricalIngestor) Cleanup() {
-	i.ingestorClient.Close()
+	i.Close()
 }
 
 func (i *AlpacaHistoricalIngestor) convertToDataEvent(bar marketdata.Bar) ingenium.DataEvent {

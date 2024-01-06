@@ -16,6 +16,7 @@ func main() {
 	}
 
 	strategy := rsi.NewRsiStrategy(*symbol)
-	strategy.Run()
 	defer strategy.Cleanup()
+
+	strategy.Run()
 }

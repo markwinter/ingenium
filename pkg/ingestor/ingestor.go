@@ -25,7 +25,7 @@ func WithNatsServer(server string) IngestorOption {
 	}
 }
 
-func NewIngestor(opts ...IngestorOption) *IngestorClient {
+func NewIngestorClient(opts ...IngestorOption) *IngestorClient {
 	var natsServer string
 
 	natsServer = os.Getenv("NATS_SERVER")

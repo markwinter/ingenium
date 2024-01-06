@@ -1,50 +1,43 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
 	"flag"
-	"fmt"
-	"log"
 	"os"
-	"time"
+	"os/signal"
+	"syscall"
 
 	ingenium "github.com/markwinter/ingenium/pkg"
-	"github.com/segmentio/ksuid"
+	"github.com/markwinter/ingenium/pkg/portfolio"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/sdcoffey/big"
 	"github.com/sdcoffey/techan"
 )
 
-type Portfolio struct {
-	currency  big.Decimal
+type ExamplePortfolio struct {
+	*portfolio.PortfolioClient
+
+	balance   big.Decimal
 	positions map[string]*techan.TradingRecord
-	client    cloudevents.Client
 }
 
-func MakePortfolio(m float64) Portfolio {
-	client, err := cloudevents.NewClientHTTP()
-	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
+func MakePortfolio(b float64, strategies []string) *ExamplePortfolio {
+	p := &ExamplePortfolio{
+		balance:   big.NewDecimal(b),
+		positions: make(map[string]*techan.TradingRecord),
 	}
 
-	return Portfolio{
-		currency: big.NewDecimal(m),
-		client:   client,
-	}
+	p.PortfolioClient = portfolio.NewPortfolioClient(p, strategies)
+
+	return p
 }
 
-var portfolio Portfolio
-var broker string
-
-func getPosition(symbol string) *techan.TradingRecord {
-	if val, ok := portfolio.positions[symbol]; ok {
+func (p *ExamplePortfolio) getPosition(symbol string) *techan.TradingRecord {
+	if val, ok := p.positions[symbol]; ok {
 		return val
 	}
 
 	record := techan.NewTradingRecord()
-	portfolio.positions[symbol] = record
+	p.positions[symbol] = record
 
 	return record
 }
@@ -58,26 +51,8 @@ func generateOrder(side ingenium.Side, symbol string, quantity big.Decimal) inge
 	}
 }
 
-func sendOrder(order ingenium.OrderEvent) {
-	event := cloudevents.NewEvent()
-	event.SetID(fmt.Sprintf("order_%s", ksuid.New()))
-	event.SetTime(time.Now())
-	event.SetSource(fmt.Sprintf("ingenium/portfolio/example/%s", os.Getenv("HOSTNAME")))
-	event.SetType("ingenium.portfolio.order")
-
-	if err := event.SetData(cloudevents.ApplicationJSON, order); err != nil {
-		log.Printf("failed to set data on event: %v", err)
-		return
-	}
-
-	ctx := cloudevents.ContextWithTarget(context.Background(), broker)
-	if result := portfolio.client.Send(ctx, event); cloudevents.IsUndelivered(result) {
-		log.Printf("failed to send, %v", result)
-	}
-}
-
-func long(symbol string) {
-	position := getPosition(symbol)
+func (p *ExamplePortfolio) long(symbol string) {
+	position := p.getPosition(symbol)
 
 	// Example portfolio doesn't increase position after initial position
 	if position.CurrentPosition().IsOpen() {
@@ -87,11 +62,11 @@ func long(symbol string) {
 	quantity := big.NewDecimal(1.0)
 
 	order := generateOrder(ingenium.BUY, symbol, quantity)
-	sendOrder(order)
+	p.SendOrder(order)
 }
 
-func short(symbol string) {
-	position := getPosition(symbol)
+func (p *ExamplePortfolio) short(symbol string) {
+	position := p.getPosition(symbol)
 
 	// Example portfolio does not allow margin so only sell open long positions
 	if !position.CurrentPosition().IsOpen() {
@@ -102,55 +77,37 @@ func short(symbol string) {
 	quantity := position.CurrentPosition().EntranceOrder().Amount
 
 	order := generateOrder(ingenium.SELL, symbol, quantity)
-	sendOrder(order)
+	p.SendOrder(order)
 }
 
-func handleSignal(event cloudevents.Event) {
-	var signalEvent ingenium.SignalEvent
-	if err := json.Unmarshal(event.Data(), &signalEvent); err != nil {
-		log.Printf("[%s] Failed to unmarshal event: %v", event.ID(), err)
-		return
-	}
-
-	if signalEvent.Signal == ingenium.SignalLong {
-		long(signalEvent.Symbol)
-	} else if signalEvent.Signal == ingenium.SignalShort {
-		short(signalEvent.Symbol)
+func (p *ExamplePortfolio) ReceiveSignal(event *ingenium.SignalEvent) {
+	if event.Signal == ingenium.SignalLong {
+		p.long(event.Symbol)
+	} else if event.Signal == ingenium.SignalShort {
+		p.short(event.Symbol)
 	}
 }
 
-func handleExecution(event cloudevents.Event) {
+func (p *ExamplePortfolio) ReceiveExecution(event *ingenium.ExecutionEvent) {}
 
+func (p *ExamplePortfolio) Run() {
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+
+	<-done
 }
 
-func receive(event cloudevents.Event) {
-	switch event.Type() {
-	case "ingenium.strategy.signal":
-		handleSignal(event)
-	case "ingenium.executor.execution":
-		handleExecution(event)
-	}
+func (p *ExamplePortfolio) Cleanup() {
+	p.Close()
 }
 
 func main() {
-	b := flag.String("broker", "", "URL of broker to send events to")
-	m := flag.Float64("money", 10000.0, "Starting currency")
+	b := flag.Float64("balance", 10000.0, "Starting balance")
 
 	flag.Parse()
 
-	if *b == "" {
-		log.Fatalf("broker url was not given")
-	}
-	broker = *b
+	portfolio := MakePortfolio(*b, []string{})
+	defer portfolio.Cleanup()
 
-	portfolio = MakePortfolio(*m)
-
-	listenClient, err := cloudevents.NewClientHTTP()
-	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
-	}
-
-	log.Print("Starting HTTP Receiver")
-
-	log.Fatal(listenClient.StartReceiver(context.Background(), receive))
+	portfolio.Run()
 }

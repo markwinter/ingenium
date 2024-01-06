@@ -1,14 +1,14 @@
 package ingenium
 
 type Ingestor interface {
-	IngestData()
 	Cleanup()
+	IngestData()
 }
 
 type Strategy interface {
 	Run()
-	Receive(*DataEvent)
 	Cleanup()
+	Receive(*DataEvent)
 }
 
 type Executor interface {
@@ -19,4 +19,6 @@ type Executor interface {
 type Portfolio interface {
 	Run()
 	Cleanup()
+	ReceiveSignal(*SignalEvent)
+	ReceiveExecution(*ExecutionEvent)
 }

@@ -32,8 +32,8 @@ func MakeEventPrinter() EventPrinter {
 	}
 	ep.ec = ec
 
-	_, err = ec.Subscribe("ingenium.>", func(e interface{}) {
-		log.Printf("%v", e)
+	_, err = ec.Subscribe("ingenium.>", func(msg interface{}) {
+		log.Printf("%v", msg)
 	})
 
 	if err != nil {

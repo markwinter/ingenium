@@ -8,14 +8,15 @@ type Signal string
 type DataType string
 
 const (
-	MARKET          OrderType = "MARKET"
-	BUY             Side      = "BUY"
-	SELL            Side      = "SELL"
-	SignalLong      Signal    = "ingenium.signal.long"
-	SignalShort     Signal    = "ingenium.signal.short"
-	DataEventType             = "ingenium.ingestor.data"
-	SignalEventType           = "ingenium.strategy.signal"
-	OrderEventType            = "ingenium.portfolio.order"
+	MARKET             OrderType = "MARKET"
+	BUY                Side      = "BUY"
+	SELL               Side      = "SELL"
+	SignalLong         Signal    = "ingenium.signal.long"
+	SignalShort        Signal    = "ingenium.signal.short"
+	DataEventType                = "ingenium.ingestor.data"
+	SignalEventType              = "ingenium.strategy.signal"
+	OrderEventType               = "ingenium.portfolio.order"
+	ExecutionEventType           = "ingenium.executor.execution"
 
 	DataTypeOhlc = "data.type.ohlc"
 )
@@ -44,9 +45,18 @@ type DataOhlc struct {
 }
 
 type OrderEvent struct {
-	Side      Side
+	Id        string
+	Timestamp time.Time
+
+	Side     Side
+	Quantity string
+	Symbol   string
+	Type     OrderType
+}
+
+type ExecutionEvent struct {
+	OrderId   string
 	Quantity  string
 	Symbol    string
-	Type      OrderType
 	Timestamp time.Time
 }
