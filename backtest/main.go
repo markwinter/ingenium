@@ -26,6 +26,8 @@ type Backtest struct {
 	Strategies []ingenium.Strategy
 	Portfolio  ingenium.Portfolio
 	Executor   ingenium.Executor
+
+	printer EventPrinter
 }
 
 type BacktestOption func(*Backtest)
@@ -63,6 +65,7 @@ func WithExecutor(executor ingenium.Portfolio) BacktestOption {
 func NewBacktest(options ...BacktestOption) *Backtest {
 	b := &Backtest{
 		Deployment: DeploymentLocal,
+		printer:    MakeEventPrinter(),
 	}
 
 	for _, opt := range options {

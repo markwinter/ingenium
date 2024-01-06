@@ -60,7 +60,7 @@ func (i AlpacaHistoricalIngestor) IngestData() {
 	//fmt.Printf("%s bars:\n", i.symbol)
 	for _, bar := range bars {
 		d := i.convertToDataEvent(bar)
-		fmt.Printf("%+v\n", d)
+		//fmt.Printf("%+v\n", d)
 
 		if err := i.ingestorClient.SendDataEvent(d); err != nil {
 			log.Printf("failed sending data event: %v", err)

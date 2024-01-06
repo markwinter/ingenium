@@ -1,7 +1,6 @@
 package rsi
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -58,7 +57,7 @@ func (s *RsiStrategy) Receive(dataEvent *ingenium.DataEvent) {
 	_, rsi := indicator.Rsi2(s.closingPrices[symbol])
 
 	if rsi[len(rsi)-1] < s.buyAt {
-		fmt.Printf("[RSI] %s | LONG | %v\n", symbol, rsi[len(rsi)-1])
+		//fmt.Printf("[RSI] %s | LONG | %v\n", symbol, rsi[len(rsi)-1])
 
 		event := ingenium.SignalEvent{
 			Symbol:    dataEvent.Symbol,
@@ -70,7 +69,7 @@ func (s *RsiStrategy) Receive(dataEvent *ingenium.DataEvent) {
 			log.Printf("failed sending signal: %v", err)
 		}
 	} else if rsi[len(rsi)-1] > s.sellAt {
-		fmt.Printf("[RSI] %s | SHORT | %v\n", symbol, rsi[len(rsi)-1])
+		//fmt.Printf("[RSI] %s | SHORT | %v\n", symbol, rsi[len(rsi)-1])
 
 		event := ingenium.SignalEvent{
 			Symbol:    dataEvent.Symbol,
