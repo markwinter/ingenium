@@ -6,9 +6,9 @@ This project is still in prototype stage.
 
 ---
 
-Ingenium is a trading system built on top of NATS. It provides a common library (in `/pkg`) that allows quick creation of new components. It's expected that end users create their own components, e.g. ingestors and strategies, using the common library that handles correct typing etc. so that components can easily communicate with each other. Whilst the current example components and library in this repository are written in Golang, you could create your own in any language or a mix of languages. For example, you could have Golang ingestors and Python based strategies. As long as there is a NATS client in your language it will work.
+Ingenium is a trading system built on top of NATS. It provides a common library (in `/pkg`) that allows quick creation of new components. It's expected that end users create their own components, e.g. ingestors and strategies, using the common library that handles correct typing etc. so that components can easily communicate with each other.
 
-Ingenium is event-driven using [nats](https://nats.io/)
+Ingenium is event-driven using [NATS](https://nats.io/)
 
 Ingenium will come with telemetry built in using OpenTelemetry.
 
