@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/markwinter/ingenium/pkg v0.0.0-20240102005339-8ca6d2c7a836
+	github.com/markwinter/ingenium/pkg v0.0.0-20240106012710-76db78fee9bc
 )
 
 require (
