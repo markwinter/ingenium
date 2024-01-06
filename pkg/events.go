@@ -1,5 +1,7 @@
 package ingenium
 
+import "time"
+
 type OrderType string
 type Side string
 type Signal string
@@ -9,8 +11,8 @@ const (
 	MARKET          OrderType = "MARKET"
 	BUY             Side      = "BUY"
 	SELL            Side      = "SELL"
-	LONG            Signal    = "LONG"
-	SHORT           Signal    = "SHORT"
+	SignalLong      Signal    = "ingenium.signal.long"
+	SignalShort     Signal    = "ingenium.signal.short"
 	DataEventType             = "ingenium.ingestor.data"
 	SignalEventType           = "ingenium.strategy.signal"
 	OrderEventType            = "ingenium.portfolio.order"
@@ -19,33 +21,32 @@ const (
 )
 
 type SignalEvent struct {
-	Symbol string
-	Signal string
+	Symbol    string
+	Signal    Signal
+	Timestamp time.Time
 }
 
 type DataEvent struct {
 	Type      DataType
 	Symbol    string
-	Timestamp string
-	Data      any
+	Timestamp time.Time
+	Ohlc      DataOhlc `json:",omitempty"`
 }
 
 type DataOhlc struct {
-	Open   string
-	High   string
-	Low    string
-	Close  string
-	Volume string
-	Period string // Period defines the time range of this data e.g. 5 min candle
+	Open      string
+	High      string
+	Low       string
+	Close     string
+	Volume    string
+	Period    string // Period defines the time range of this data e.g. 5 min candle
+	Timestamp time.Time
 }
 
 type OrderEvent struct {
-	Side     Side
-	Quantity string
-	Symbol   string
-	Type     OrderType
-}
-
-type NewEventType struct {
-	Key string
+	Side      Side
+	Quantity  string
+	Symbol    string
+	Type      OrderType
+	Timestamp time.Time
 }

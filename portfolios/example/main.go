@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	ingenium "github.com/markwinter/ingenium/pkg"
@@ -113,9 +112,9 @@ func handleSignal(event cloudevents.Event) {
 		return
 	}
 
-	if strings.ToUpper(signalEvent.Signal) == string(ingenium.LONG) {
+	if signalEvent.Signal == ingenium.SignalLong {
 		long(signalEvent.Symbol)
-	} else if strings.ToUpper(signalEvent.Signal) == string(ingenium.SHORT) {
+	} else if signalEvent.Signal == ingenium.SignalShort {
 		short(signalEvent.Symbol)
 	}
 }

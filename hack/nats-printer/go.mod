@@ -1,4 +1,4 @@
-module github.com/markwinter/ingenium/pkg
+module github.com/markwinter/ingenium/hack/nats-printer
 
 go 1.21
 

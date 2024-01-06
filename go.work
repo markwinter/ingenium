@@ -1,9 +1,9 @@
 go 1.21
 
 use (
-	./hack/cloudevent-printer
-	./ingestors/csv
-	./ingestors/yahoo
+	./backtest
+	./hack/nats-printer
+	./ingestors/alpaca-historical
 	./pkg
 	./portfolios/example
 	./strategies/rsi

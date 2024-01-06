@@ -14,46 +14,12 @@ spec:
     spec:
       containers:
       - name: strategy
-        image: rsi-strategy:0.12
+        image: rsi-strategy:latest
         command:
           - /strategy
-          - -broker
-          - http://kafka-broker-ingress.knative-eventing.svc.cluster.local/ingenium/broker
-        imagePullPolicy: IfNotPresent
+          - --symbol
+          - CPNG
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
-        ports:
-        - containerPort: 8080
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: rsi-strategy
-  namespace: ingenium
-spec:
-  selector:
-    app: rsi-strategy
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8080
----
-apiVersion: eventing.knative.dev/v1
-kind: Trigger
-metadata:
-  name: rsi-strategy
-  namespace: ingenium
-  annotations:
-     kafka.eventing.knative.dev/delivery.order: ordered
-spec:
-  broker: broker
-  filter:
-    attributes:
-      type: ingenium.ingestor.data
-  subscriber:
-    ref:
-     apiVersion: v1
-     kind: Service
-     name: rsi-strategy

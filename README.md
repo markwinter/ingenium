@@ -6,9 +6,9 @@ This project is still in prototype stage.
 
 ---
 
-Ingenium is a cloud native electronic trading system built on top of Kubernetes and Knative Eventing. It provides a common library (in `/pkg`) that allows quick creation of new components. It's expected that end users create their own components, e.g. ingestors, using the common library that handles correct typing, formatting etc. so that components can easily communicate with each other. Whilst the current example components and library in this repository are written in Golang, you could create your own in any language or a mix of languages. For example, you could have Golang ingestors and Python based strategies. As long as you can receive and send CloudEvents it will work.
+Ingenium is a trading system built on top of NATS. It provides a common library (in `/pkg`) that allows quick creation of new components. It's expected that end users create their own components, e.g. ingestors and strategies, using the common library that handles correct typing etc. so that components can easily communicate with each other. Whilst the current example components and library in this repository are written in Golang, you could create your own in any language or a mix of languages. For example, you could have Golang ingestors and Python based strategies. As long as there is a NATS client in your language it will work.
 
-Ingenium is event-driven, using [CloudEvents](https://cloudevents.io/) and [Knative Eventing](https://knative.dev/docs/eventing/) to pass data between components.
+Ingenium is event-driven using [nats](https://nats.io/)
 
 Ingenium will come with telemetry built in using OpenTelemetry.
 
@@ -34,50 +34,37 @@ A simplified diagram of the system is below. In reality you can have multiple of
                  │         │                │          │
                  └─────────►  Event Broker  ◄──────────┘
                Data Event  │                │     Signal Event
-                           └───────────────┬┘
-                                           │
-                                           └─────────┐
-                                                     │Signal Event
-                                                     │
-    ┌───────────────────┐ Execution Event ┌──────────▼──┐
-    │                   ├─────────────────►             │
+                           └▲─▲────────────┬┘
+                            │ │            │
+                            │ │            └─────────┐
+                    ┌───────┘ └────────────┐         │Signal Event
+                    │     Order Event /    │         │
+    ┌───────────────▼───┐ Execution Event ┌▼─────────▼──┐
+    │                   │                 │             │
     │  Order Executor   │                 │  Portfolio  │
-    │                   ◄─────────────────┤             │
-    └───────────────────┘   Order Event   └─────────────┘
+    │                   │                 │             │
+    └───────────────────┘                 └─────────────┘
      4.                                               3.
 
 
-### Event Broker
-
-The event broker handles receiving and sending events between components.
-
-By default Kafka is used for the broker.
-This can be changed to something else like GCP PubSub based on your needs.
-Keep in mind that message ordering is generally required for strategies to work correctly.
-
-If you have multiple of the same component e.g. Strategies, the same event will be delivered to each component.
-When you create a `Trigger`, Kafka will send any existing messages retained in the topic.
-
 ### Ingestors
 
-Ingestors feed market data into the system. The component produces a data event for each market data
-which gets sent to the Broker.
+Ingestors feed market data into the system. The component produces a data event `ingenium.DataEvent` for each market data
+and sends it to a subject in the format: `ingenium.ingestor.data.<stock-symbol>`
 
 Examples of ingestors:
 
-- One-Shot Kubernetes Job that reads historical data from a CSV file or an API
-- A long running Kubernetes Deployment that reads from a real market exchange
+- One-shot jobs that read historical data from a CSV file or an API
+- A long running binary that reads from a live market exchange
 
 ### Strategies
 
-Strategies receive market data events from Ingestors and produce signal events based on an implemented
-trading strategy.
+Strategies receive data events from Ingestors by subscribing to a data event subject `ingenium.ingestor.data.<stock-symbol>` (or wildcard data `ingenium.ingestor.data.*`). Strategies produce signal events `ingenium.SignalEvent` based on an implemented trading strategy and send it to subject `ingenium.strategy.signal.<strategy-name>`
 
 ### Portfolios
 
-Portfolios receive signal events from Strategies and decide based on several factors such as
-remaining balance, risk assessment etc. whether to generate a market order event. When generating a market
-order appropriate order sizing also takes place. Portfolios also manage open positions.
+Portfolios receive signal events from Strategies and decide based on several factors whether to generate a market order event `ingenium.OrderEvent` and send it to the subject
+`ingenium.portfolio.order.<portfolio-name>`.
 
 ### Order Executors
 
@@ -86,9 +73,9 @@ on the exchange. They also return order execution events back to the Portfolio.
 
 ## Events
 
-All events are CloudEvents generated using the CloudEvents SDKs. Currently they all serialized to JSON.
+All events are defined as Golang structs. Currently they are serialized to JSON.
 
-Below is a list of all Events in the system and their spec
+Below is a list of all events in the system and their spec
 
 ### Market Data
 
@@ -99,7 +86,7 @@ type DataEvent struct {
   Type      DataType
   Symbol    string
   Timestamp string
-  Data      any
+  Ohlc      DataOhlc `json:",omitempty"`
 }
 
 type DataOhlc struct {
@@ -150,3 +137,12 @@ Type: `ingenium.executor.execution`
 
 ```GO
 ```
+
+
+## Roadmap
+
+- Finish building examples of each component
+- Add component generators/functions to `/pkg`
+- Backtesting lib
+- A databse component to record events, trades, portfolio data etc.
+- Allow deploys to local, or to Kube cluster (similar to [Service Weaver](https://serviceweaver.dev/))
