@@ -9,6 +9,8 @@ require (
 	github.com/nats-io/nats.go v1.31.0
 	github.com/sdcoffey/big v0.7.0
 	github.com/sdcoffey/techan v0.12.1
+	github.com/segmentio/ksuid v1.0.4
+	github.com/shopspring/decimal v1.3.1
 )
 
 require (
@@ -21,8 +23,6 @@ require (
 	github.com/nats-io/nkeys v0.4.7 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/segmentio/ksuid v1.0.4 // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
