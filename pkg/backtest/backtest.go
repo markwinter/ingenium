@@ -45,7 +45,7 @@ func WithPortfolio(portfolio ingenium.Portfolio) BacktestOption {
 	}
 }
 
-func WithExecutor(executor ingenium.Portfolio) BacktestOption {
+func WithExecutor(executor ingenium.Executor) BacktestOption {
 	return func(b *Backtest) {
 		b.Executor = executor
 	}

@@ -14,6 +14,7 @@ type Strategy interface {
 type Executor interface {
 	Run()
 	Cleanup()
+	ReceiveOrder(*OrderEvent)
 }
 
 type Portfolio interface {

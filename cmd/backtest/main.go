@@ -8,9 +8,10 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	alpaca "github.com/markwinter/ingenium/examples/ingestors/alpaca-historical"
-	exampleportfolio "github.com/markwinter/ingenium/examples/portfolios/example"
-	rsi "github.com/markwinter/ingenium/examples/strategies/rsi"
+	executor "github.com/markwinter/ingenium/examples/executors/alpaca"
+	ingestor "github.com/markwinter/ingenium/examples/ingestors/alpaca-historical"
+	portfolio "github.com/markwinter/ingenium/examples/portfolios/example"
+	strategy "github.com/markwinter/ingenium/examples/strategies/rsi"
 	"github.com/markwinter/ingenium/pkg/backtest"
 )
 
@@ -31,9 +32,10 @@ func main() {
 	backtest := backtest.NewBacktest(
 		// Run locally or deploy to kubernetes
 		backtest.WithDeploymentType(backtest.DeploymentLocal),
-		backtest.WithIngestor(alpaca.NewAlpacaHistoricalIngestor(symbol, dataStart, dataEnd, "1h")),
-		backtest.WithStrategy(rsi.NewRsiStrategy(symbol)),
-		backtest.WithPortfolio(exampleportfolio.NewPortfolio(1000)),
+		backtest.WithIngestor(ingestor.NewAlpacaHistoricalIngestor(symbol, dataStart, dataEnd, "1h")),
+		backtest.WithStrategy(strategy.NewRsiStrategy(symbol)),
+		backtest.WithPortfolio(portfolio.NewPortfolio(1000)),
+		backtest.WithExecutor(executor.NewAlpacaExecutor()),
 	)
 	defer backtest.Cleanup()
 

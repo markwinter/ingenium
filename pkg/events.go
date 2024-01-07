@@ -9,17 +9,20 @@ type DataType string
 type TimeInForce string
 
 const (
-	MARKET             OrderType   = "MARKET"
-	BUY                Side        = "BUY"
-	SELL               Side        = "SELL"
-	DAY                TimeInForce = "DAY"
-	GTC                TimeInForce = "GTC"
-	SignalLong         Signal      = "ingenium.signal.long"
-	SignalShort        Signal      = "ingenium.signal.short"
-	DataEventType                  = "ingenium.ingestor.data"
-	SignalEventType                = "ingenium.strategy.signal"
-	OrderEventType                 = "ingenium.portfolio.order"
-	ExecutionEventType             = "ingenium.executor.execution"
+	MarketOrderType OrderType   = "market"
+	LimitOrderType  OrderType   = "limit"
+	BuySide         Side        = "buy"
+	SellSide        Side        = "sell"
+	DayTimeInForce  TimeInForce = "day"
+	GtcTimeInForce  TimeInForce = "gtc"
+
+	SignalLong  Signal = "ingenium.signal.long"
+	SignalShort Signal = "ingenium.signal.short"
+
+	DataEventType      = "ingenium.ingestor.data"
+	SignalEventType    = "ingenium.strategy.signal"
+	OrderEventType     = "ingenium.portfolio.order"
+	ExecutionEventType = "ingenium.executor.execution"
 
 	DataTypeOhlc = "data.type.ohlc"
 )
@@ -51,16 +54,32 @@ type OrderEvent struct {
 	Id        string
 	Timestamp time.Time
 
-	Side        Side
-	Quantity    string
-	Symbol      string
-	Type        OrderType
-	TimeInForce TimeInForce
+	Symbol   string
+	Side     Side
+	Quantity string
+	Type     OrderType
+
+	TimeInForce   TimeInForce
+	ExtendedHours bool
+
+	LimitPrice   string
+	StopPrice    string
+	TakeProfit   string
+	TrailPrice   string
+	TrailPercent string
+	StopLoss     StopLoss
+}
+
+type StopLoss struct {
+	LimitPrice string
+	StopPrice  string
 }
 
 type ExecutionEvent struct {
-	OrderId   string
-	Quantity  string
-	Symbol    string
+	Id        string
 	Timestamp time.Time
+
+	OrderId  string
+	Quantity string
+	Symbol   string
 }

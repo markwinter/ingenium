@@ -6,9 +6,7 @@ This project is still in prototype stage.
 
 ---
 
-Ingenium is a trading system built on top of NATS. It provides a common library (`go get github.com/markwinter/ingenium/pkg`) that allows quick creation of new components. It's expected that end users create their own components, e.g. ingestors and strategies, using the common library that handles correct typing etc. so that components can easily communicate with each other.
-
-Ingenium is event-driven using [NATS](https://nats.io/)
+Ingenium is an event-driven trading system built on top of [NATS](https://nats.io/). It provides a common library (`go get github.com/markwinter/ingenium/pkg`) that allows quick creation of new components. It's expected that end users create their own components, e.g. ingestors and strategies, using the common library that handles correct typing etc. so that components can easily communicate with each other.
 
 Ingenium will come with telemetry built in using OpenTelemetry.
 
@@ -103,7 +101,7 @@ type DataOhlc struct {
 Type: `ingenium.strategy.signal`
 
 ```GO
-type Signal struct {
+type SignalEvent struct {
   Symbol string
   Signal string
 }
@@ -114,20 +112,42 @@ type Signal struct {
 Type: `ingenium.portfolio.order`
 
 ```GO
-type Order struct {
-	Side     Side
-	Quantity big.Decimal
-	Symbol   string
-	Type     OrderType
+type OrderEvent struct {
+  Id        string
+  Timestamp time.Time
+
+  Symbol   string
+  Side     Side
+  Quantity string
+  Type     OrderType
+
+  TimeInForce   TimeInForce
+  ExtendedHours bool
+
+  LimitPrice   string
+  StopPrice    string
+  TakeProfit   string
+  TrailPrice   string
+  TrailPercent string
+  StopLoss     StopLoss
+}
+
+type StopLoss struct {
+  LimitPrice string
+  StopPrice  string
 }
 
 type OrderType string
 type Side string
+type TimeInForce string
 
 const (
-	MARKET OrderType = "MARKET"
-	BUY    Side      = "BUY"
-	SELL   Side      = "SELL"
+  MarketOrderType    OrderType   = "market"
+  LimitOrderType     OrderType   = "limit"
+  BuySide            Side        = "buy"
+  SellSide           Side        = "sell"
+  DayTimeInForce     TimeInForce = "day"
+  GtcTimeInForce     TimeInForce = "gtc"
 )
 ```
 
@@ -136,8 +156,15 @@ const (
 Type: `ingenium.executor.execution`
 
 ```GO
-```
+type ExecutionEvent struct {
+  Id        string
+  Timestamp time.Time
 
+  OrderId  string
+  Quantity string
+  Symbol   string
+}
+```
 
 ## Roadmap
 

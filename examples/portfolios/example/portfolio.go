@@ -42,10 +42,11 @@ func (p *ExamplePortfolio) getPosition(symbol string) *techan.TradingRecord {
 
 func generateOrder(side ingenium.Side, symbol string, quantity big.Decimal) ingenium.OrderEvent {
 	return ingenium.OrderEvent{
-		Side:     side,
-		Symbol:   symbol,
-		Quantity: quantity.String(),
-		Type:     ingenium.MARKET,
+		Side:        side,
+		Symbol:      symbol,
+		Quantity:    quantity.String(),
+		Type:        ingenium.MarketOrderType,
+		TimeInForce: ingenium.GtcTimeInForce,
 	}
 }
 
@@ -59,7 +60,7 @@ func (p *ExamplePortfolio) long(symbol string) {
 
 	quantity := big.NewDecimal(1.0)
 
-	order := generateOrder(ingenium.BUY, symbol, quantity)
+	order := generateOrder(ingenium.BuySide, symbol, quantity)
 	p.SendOrder(order)
 }
 
@@ -74,7 +75,7 @@ func (p *ExamplePortfolio) short(symbol string) {
 	// Example portfolio always closes position completely
 	quantity := position.CurrentPosition().EntranceOrder().Amount
 
-	order := generateOrder(ingenium.SELL, symbol, quantity)
+	order := generateOrder(ingenium.SellSide, symbol, quantity)
 	p.SendOrder(order)
 }
 
