@@ -21,7 +21,7 @@ func main() {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	// prints all events ingenium.> to see in the console what happens during a backtest
+	// prints all events in console during a backtest by subscribing to subject: ingenium.>
 	_ = MakeEventPrinter()
 
 	dataStart := time.Date(2024, 01, 04, 04, 00, 00, 00, time.UTC)
