@@ -40,6 +40,12 @@ func (e *AlpacaExecutor) ReceiveOrder(order *ingenium.OrderEvent) {
 }
 
 func (e *AlpacaExecutor) tradeHandler(trade alpaca.TradeUpdate) {
+	if trade.Event != "fill" {
+		return
+	}
+
+	// TODO: Handle all trade.Event types
+
 	event := ingenium.ExecutionEvent{
 		OrderId:            trade.Order.ClientOrderID,
 		Quantity:           trade.Qty.String(),

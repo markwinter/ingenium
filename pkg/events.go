@@ -7,6 +7,7 @@ type Side string
 type Signal string
 type DataType string
 type TimeInForce string
+type TradeUpdate string
 
 const (
 	TimestampFormat = "2006-01-02T15:00:00"
@@ -17,6 +18,16 @@ const (
 	SellSide        Side        = "sell"
 	DayTimeInForce  TimeInForce = "day"
 	GtcTimeInForce  TimeInForce = "gtc"
+
+	TradeFilled      TradeUpdate = "filled"
+	TradePartialFill TradeUpdate = "partial_fill"
+	TradeCanceled    TradeUpdate = "canceled"
+	TradeRejected    TradeUpdate = "rejected"
+	TradeAccepted    TradeUpdate = "accepted"
+	TradeNew         TradeUpdate = "new"
+	TradeExpired     TradeUpdate = "expired"
+	TradeReplaced    TradeUpdate = "replaced"
+	TradeHeld        TradeUpdate = "held"
 
 	SignalLong  Signal = "ingenium.signal.long"
 	SignalShort Signal = "ingenium.signal.short"
@@ -92,4 +103,6 @@ type ExecutionEvent struct {
 	Symbol             string
 	Quantity           string
 	Price              string
+
+	Update TradeUpdate
 }

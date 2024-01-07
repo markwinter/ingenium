@@ -15,29 +15,20 @@ type ExamplePortfolio struct {
 	*portfolio.PortfolioClient
 
 	balance   big.Decimal
-	positions map[string]*techan.TradingRecord
+	positions map[string]*techan.Position
+	record    map[string]*techan.TradingRecord
 }
 
 func NewPortfolio(b float64) *ExamplePortfolio {
 	p := &ExamplePortfolio{
 		balance:   big.NewDecimal(b),
-		positions: make(map[string]*techan.TradingRecord),
+		positions: make(map[string]*techan.Position),
+		record:    make(map[string]*techan.TradingRecord),
 	}
 
 	p.PortfolioClient = portfolio.NewPortfolioClient(p)
 
 	return p
-}
-
-func (p *ExamplePortfolio) getPosition(symbol string) *techan.TradingRecord {
-	if val, ok := p.positions[symbol]; ok {
-		return val
-	}
-
-	record := techan.NewTradingRecord()
-	p.positions[symbol] = record
-
-	return record
 }
 
 func generateOrder(side ingenium.Side, symbol string, quantity big.Decimal) ingenium.OrderEvent {
@@ -51,13 +42,17 @@ func generateOrder(side ingenium.Side, symbol string, quantity big.Decimal) inge
 }
 
 func (p *ExamplePortfolio) long(symbol string) {
-	position := p.getPosition(symbol)
+	record, ok := p.record[symbol]
+	if !ok {
+		record = techan.NewTradingRecord()
+	}
 
 	// Example portfolio doesn't increase position after initial position
-	if position.CurrentPosition().IsOpen() {
+	if record.CurrentPosition().IsOpen() {
 		return
 	}
 
+	// Example portfolio always buys just 1 share
 	quantity := big.NewDecimal(1.0)
 
 	order := generateOrder(ingenium.BuySide, symbol, quantity)
@@ -65,15 +60,14 @@ func (p *ExamplePortfolio) long(symbol string) {
 }
 
 func (p *ExamplePortfolio) short(symbol string) {
-	position := p.getPosition(symbol)
-
-	// Example portfolio does not allow margin so only sell open long positions
-	if !position.CurrentPosition().IsOpen() {
+	record, ok := p.record[symbol]
+	if !ok || !record.CurrentPosition().IsOpen() {
+		// Example portfolio does not allow shorting so only sell open long positions
 		return
 	}
 
 	// Example portfolio always closes position completely
-	quantity := position.CurrentPosition().EntranceOrder().Amount
+	quantity := record.CurrentPosition().EntranceOrder().Amount
 
 	order := generateOrder(ingenium.SellSide, symbol, quantity)
 	p.SendOrder(order)
@@ -88,6 +82,24 @@ func (p *ExamplePortfolio) ReceiveSignal(event *ingenium.SignalEvent) {
 }
 
 func (p *ExamplePortfolio) ReceiveExecution(event *ingenium.ExecutionEvent) {
+	order := techan.Order{
+		//Side:
+		Security:      event.Symbol,
+		Price:         big.NewFromString(event.Price),
+		Amount:        big.NewFromString(event.Quantity),
+		ExecutionTime: event.ExecutionTimestamp,
+	}
+
+	position, ok := p.positions[event.Symbol]
+	if ok {
+		order.Side = techan.SELL
+		position.Exit(order)
+	} else {
+		order.Side = techan.BUY
+		p.positions[event.Symbol] = techan.NewPosition(order)
+	}
+
+	p.record[event.Symbol].Operate(order)
 }
 
 func (p *ExamplePortfolio) Run() {
