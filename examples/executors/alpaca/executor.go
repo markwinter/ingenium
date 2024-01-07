@@ -40,7 +40,16 @@ func (e *AlpacaExecutor) ReceiveOrder(order *ingenium.OrderEvent) {
 }
 
 func (e *AlpacaExecutor) tradeHandler(trade alpaca.TradeUpdate) {
+	event := ingenium.ExecutionEvent{
+		OrderId:            trade.Order.ClientOrderID,
+		Quantity:           trade.Qty.String(),
+		Price:              trade.Price.String(),
+		ExecutionTimestamp: *trade.Timestamp,
+	}
 
+	if err := e.SendExecutionEvent(event); err != nil {
+		log.Printf("failed sending execution event: %v", err)
+	}
 }
 
 func (e *AlpacaExecutor) Cleanup() {
