@@ -1,14 +1,12 @@
-package main
+package exampleportfolio
 
 import (
-	"flag"
 	"os"
 	"os/signal"
 	"syscall"
 
 	ingenium "github.com/markwinter/ingenium/pkg"
 	"github.com/markwinter/ingenium/pkg/portfolio"
-
 	"github.com/sdcoffey/big"
 	"github.com/sdcoffey/techan"
 )
@@ -20,13 +18,13 @@ type ExamplePortfolio struct {
 	positions map[string]*techan.TradingRecord
 }
 
-func MakePortfolio(b float64, strategies []string) *ExamplePortfolio {
+func NewPortfolio(b float64) *ExamplePortfolio {
 	p := &ExamplePortfolio{
 		balance:   big.NewDecimal(b),
 		positions: make(map[string]*techan.TradingRecord),
 	}
 
-	p.PortfolioClient = portfolio.NewPortfolioClient(p, strategies)
+	p.PortfolioClient = portfolio.NewPortfolioClient(p)
 
 	return p
 }
@@ -88,7 +86,8 @@ func (p *ExamplePortfolio) ReceiveSignal(event *ingenium.SignalEvent) {
 	}
 }
 
-func (p *ExamplePortfolio) ReceiveExecution(event *ingenium.ExecutionEvent) {}
+func (p *ExamplePortfolio) ReceiveExecution(event *ingenium.ExecutionEvent) {
+}
 
 func (p *ExamplePortfolio) Run() {
 	done := make(chan os.Signal, 1)
@@ -99,15 +98,4 @@ func (p *ExamplePortfolio) Run() {
 
 func (p *ExamplePortfolio) Cleanup() {
 	p.Close()
-}
-
-func main() {
-	b := flag.Float64("balance", 10000.0, "Starting balance")
-
-	flag.Parse()
-
-	portfolio := MakePortfolio(*b, []string{})
-	defer portfolio.Cleanup()
-
-	portfolio.Run()
 }

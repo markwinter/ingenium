@@ -1,10 +1,8 @@
 package portfolio
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	ingenium "github.com/markwinter/ingenium/pkg"
 	"github.com/nats-io/nats.go"
@@ -25,7 +23,7 @@ func WithNatsServer(server string) PortfolioOption {
 	}
 }
 
-func NewPortfolioClient(portfolio ingenium.Portfolio, strategies []string, opts ...PortfolioOption) *PortfolioClient {
+func NewPortfolioClient(portfolio ingenium.Portfolio, opts ...PortfolioOption) *PortfolioClient {
 	var natsServer string
 
 	natsServer = os.Getenv("NATS_SERVER")
@@ -53,13 +51,16 @@ func NewPortfolioClient(portfolio ingenium.Portfolio, strategies []string, opts 
 	}
 	i.ec = ec
 
-	for _, strategy := range strategies {
-		subject := fmt.Sprintf("%s.%s", ingenium.SignalEventType, strings.ToLower(strategy))
+	if _, err := i.ec.Subscribe(ingenium.SignalEventType, func(event *ingenium.SignalEvent) {
+		portfolio.ReceiveSignal(event)
+	}); err != nil {
+		log.Printf("failed to subscribe to strategy signals: %v", err)
+	}
 
-		if _, err := i.ec.Subscribe(subject, func(d *ingenium.DataEvent) {
-		}); err != nil {
-			log.Printf("failed to subscribe to strategy: %v", err)
-		}
+	if _, err := i.ec.Subscribe(ingenium.ExecutionEventType, func(event *ingenium.ExecutionEvent) {
+		portfolio.ReceiveExecution(event)
+	}); err != nil {
+		log.Printf("failed to subscribe to strategy signals: %v", err)
 	}
 
 	return i

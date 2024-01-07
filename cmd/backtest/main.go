@@ -8,9 +8,10 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	alpaca "github.com/markwinter/ingenium/ingestors/alpacahistorical/pkg"
+	alpaca "github.com/markwinter/ingenium/examples/ingestors/alpaca-historical"
+	exampleportfolio "github.com/markwinter/ingenium/examples/portfolios/example"
+	rsi "github.com/markwinter/ingenium/examples/strategies/rsi"
 	ingenium "github.com/markwinter/ingenium/pkg"
-	rsi "github.com/markwinter/ingenium/strategies/rsi/pkg"
 )
 
 type DeploymentType string
@@ -92,7 +93,7 @@ func (b *Backtest) Cleanup() {
 		strategy.Cleanup()
 	}
 
-	//b.Portfolio.Cleanup()
+	b.Portfolio.Cleanup()
 	//b.Executor.Cleanup()
 }
 
@@ -112,6 +113,7 @@ func main() {
 		WithDeploymentType(DeploymentLocal),
 		WithIngestor(alpaca.NewAlpacaHistoricalIngestor(symbol, dataStart, dataEnd, "1h")),
 		WithStrategy(rsi.NewRsiStrategy(symbol)),
+		WithPortfolio(exampleportfolio.NewPortfolio(1000)),
 	)
 	defer backtest.Cleanup()
 

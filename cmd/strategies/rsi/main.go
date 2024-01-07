@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	rsi "github.com/markwinter/ingenium/strategies/rsi/pkg"
+	"github.com/markwinter/ingenium/examples/strategies/rsi"
 )
 
 func main() {

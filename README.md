@@ -6,7 +6,7 @@ This project is still in prototype stage.
 
 ---
 
-Ingenium is a trading system built on top of NATS. It provides a common library (in `/pkg`) that allows quick creation of new components. It's expected that end users create their own components, e.g. ingestors and strategies, using the common library that handles correct typing etc. so that components can easily communicate with each other.
+Ingenium is a trading system built on top of NATS. It provides a common library (`go get github.com/markwinter/ingenium/pkg`) that allows quick creation of new components. It's expected that end users create their own components, e.g. ingestors and strategies, using the common library that handles correct typing etc. so that components can easily communicate with each other.
 
 Ingenium is event-driven using [NATS](https://nats.io/)
 
@@ -59,17 +59,17 @@ Examples of ingestors:
 
 ### Strategies
 
-Strategies receive data events from Ingestors by subscribing to a data event subject `ingenium.ingestor.data.<stock-symbol>` (or wildcard data `ingenium.ingestor.data.*`). Strategies produce signal events `ingenium.SignalEvent` based on an implemented trading strategy and send it to subject `ingenium.strategy.signal.<strategy-name>`
+Strategies receive data events from Ingestors by subscribing to a data event subject `ingenium.ingestor.data.<stock-symbol>` (or wildcard data `ingenium.ingestor.data.*`). Strategies produce signal events `ingenium.SignalEvent` based on an implemented trading strategy and send it to subject `ingenium.strategy.signal`
 
 ### Portfolios
 
 Portfolios receive signal events from Strategies and decide based on several factors whether to generate a market order event `ingenium.OrderEvent` and send it to the subject
-`ingenium.portfolio.order.<portfolio-name>`.
+`ingenium.portfolio.order`.
 
 ### Order Executors
 
 Order Executors receive market order events from Portfolios and execute the appropriate order
-on the exchange. They also return order execution events back to the Portfolio.
+on the exchange. They also return order execution events back to the Portfolio using the subject `ingenium.executor.execution`. In the case of partial fills, multiple messages are sent containing the original order id so the Portfolio can track its position.
 
 ## Events
 
@@ -144,5 +144,5 @@ Type: `ingenium.executor.execution`
 - Finish building examples of each component
 - Add component generators/functions to `/pkg`
 - Backtesting lib
-- A databse component to record events, trades, portfolio data etc.
+- A database component to record events, trades, portfolio data etc.
 - Allow deploys to local, or to Kube cluster (similar to [Service Weaver](https://serviceweaver.dev/))

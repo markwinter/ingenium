@@ -72,6 +72,6 @@ func (c *StrategyClient) Close() {
 }
 
 func (c *StrategyClient) SendSignalEvent(e ingenium.SignalEvent) error {
-	subject := strings.ToLower(fmt.Sprintf("%s.%s", ingenium.SignalEventType, e.Symbol))
+	subject := ingenium.SignalEventType
 	return c.ec.Publish(subject, e)
 }

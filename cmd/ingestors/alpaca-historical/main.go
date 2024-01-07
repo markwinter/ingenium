@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	alpaca "github.com/markwinter/ingenium/ingestors/alpacahistorical/pkg"
+	alpaca "github.com/markwinter/ingenium/examples/ingestors/alpaca-historical"
 	ingenium "github.com/markwinter/ingenium/pkg"
 )
 
