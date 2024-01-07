@@ -9,6 +9,8 @@ type DataType string
 type TimeInForce string
 
 const (
+	TimestampFormat = "2006-01-02T15:00:00"
+
 	MarketOrderType OrderType   = "market"
 	LimitOrderType  OrderType   = "limit"
 	BuySide         Side        = "buy"
@@ -27,6 +29,7 @@ const (
 	DataTypeOhlc = "data.type.ohlc"
 )
 
+// EventMetadata gets filled in for you when using the component clients' Send methods
 type EventMetadata struct {
 	Id        string
 	Timestamp time.Time
