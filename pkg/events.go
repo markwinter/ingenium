@@ -27,17 +27,24 @@ const (
 	DataTypeOhlc = "data.type.ohlc"
 )
 
-type SignalEvent struct {
-	Symbol    string
-	Signal    Signal
+type EventMetadata struct {
+	Id        string
 	Timestamp time.Time
 }
 
+type SignalEvent struct {
+	EventMetadata
+
+	Symbol string
+	Signal Signal
+}
+
 type DataEvent struct {
-	Type      DataType
-	Symbol    string
-	Timestamp time.Time
-	Ohlc      DataOhlc `json:",omitempty"`
+	EventMetadata
+
+	Type   DataType
+	Symbol string
+	Ohlc   DataOhlc `json:",omitempty"`
 }
 
 type DataOhlc struct {
@@ -51,8 +58,7 @@ type DataOhlc struct {
 }
 
 type OrderEvent struct {
-	Id        string
-	Timestamp time.Time
+	EventMetadata
 
 	Symbol   string
 	Side     Side
@@ -76,10 +82,11 @@ type StopLoss struct {
 }
 
 type ExecutionEvent struct {
-	Id        string
-	Timestamp time.Time
+	EventMetadata
 
-	OrderId  string
-	Quantity string
-	Symbol   string
+	ExecutionTimestamp time.Time
+	OrderId            string
+	Symbol             string
+	Quantity           string
+	Price              string
 }

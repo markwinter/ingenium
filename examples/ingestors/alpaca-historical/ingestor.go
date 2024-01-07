@@ -74,9 +74,8 @@ func (i AlpacaHistoricalIngestor) Cleanup() {
 
 func (i *AlpacaHistoricalIngestor) convertToDataEvent(bar marketdata.Bar) ingenium.DataEvent {
 	return ingenium.DataEvent{
-		Type:      ingenium.DataTypeOhlc,
-		Timestamp: time.Now(),
-		Symbol:    i.symbol,
+		Type:   ingenium.DataTypeOhlc,
+		Symbol: i.symbol,
 		Ohlc: ingenium.DataOhlc{
 			Open:      fmt.Sprintf("%f", bar.Open),
 			High:      fmt.Sprintf("%f", bar.High),

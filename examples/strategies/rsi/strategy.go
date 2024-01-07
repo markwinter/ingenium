@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
-	"time"
 
 	"github.com/cinar/indicator"
 	ingenium "github.com/markwinter/ingenium/pkg"
@@ -56,9 +55,8 @@ func (s *RsiStrategy) Receive(dataEvent *ingenium.DataEvent) {
 		//fmt.Printf("[RSI] %s | LONG | %v\n", symbol, rsi[len(rsi)-1])
 
 		event := ingenium.SignalEvent{
-			Symbol:    dataEvent.Symbol,
-			Signal:    ingenium.SignalLong,
-			Timestamp: time.Now(),
+			Symbol: dataEvent.Symbol,
+			Signal: ingenium.SignalLong,
 		}
 
 		if err := s.SendSignalEvent(event); err != nil {
@@ -68,9 +66,8 @@ func (s *RsiStrategy) Receive(dataEvent *ingenium.DataEvent) {
 		//fmt.Printf("[RSI] %s | SHORT | %v\n", symbol, rsi[len(rsi)-1])
 
 		event := ingenium.SignalEvent{
-			Symbol:    dataEvent.Symbol,
-			Signal:    ingenium.SignalShort,
-			Timestamp: time.Now(),
+			Symbol: dataEvent.Symbol,
+			Signal: ingenium.SignalShort,
 		}
 
 		if err := s.SendSignalEvent(event); err != nil {

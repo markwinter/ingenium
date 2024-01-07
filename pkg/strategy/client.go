@@ -5,9 +5,11 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	ingenium "github.com/markwinter/ingenium/pkg"
 	"github.com/nats-io/nats.go"
+	"github.com/segmentio/ksuid"
 )
 
 type StrategyClient struct {
@@ -72,6 +74,9 @@ func (c *StrategyClient) Close() {
 }
 
 func (c *StrategyClient) SendSignalEvent(e ingenium.SignalEvent) error {
+	e.Timestamp = time.Now()
+	e.Id = "signal_" + ksuid.New().String()
+
 	subject := ingenium.SignalEventType
 	return c.ec.Publish(subject, e)
 }

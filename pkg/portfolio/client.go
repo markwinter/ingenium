@@ -3,9 +3,11 @@ package portfolio
 import (
 	"log"
 	"os"
+	"time"
 
 	ingenium "github.com/markwinter/ingenium/pkg"
 	"github.com/nats-io/nats.go"
+	"github.com/segmentio/ksuid"
 )
 
 type PortfolioClient struct {
@@ -71,4 +73,7 @@ func (i *PortfolioClient) Close() {
 	i.nc.Close()
 }
 
-func (i *PortfolioClient) SendOrder(order ingenium.OrderEvent) {}
+func (i *PortfolioClient) SendOrder(e ingenium.OrderEvent) {
+	e.Timestamp = time.Now()
+	e.Id = "order_" + ksuid.New().String()
+}

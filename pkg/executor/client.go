@@ -3,9 +3,11 @@ package executor
 import (
 	"log"
 	"os"
+	"time"
 
 	ingenium "github.com/markwinter/ingenium/pkg"
 	"github.com/nats-io/nats.go"
+	"github.com/segmentio/ksuid"
 )
 
 type ExecutorClient struct {
@@ -65,7 +67,10 @@ func (i *ExecutorClient) Close() {
 	i.nc.Close()
 }
 
-func (i *ExecutorClient) SendExecutionEvent(d ingenium.ExecutionEvent) error {
+func (i *ExecutorClient) SendExecutionEvent(e ingenium.ExecutionEvent) error {
+	e.Timestamp = time.Now()
+	e.Id = "exec_" + ksuid.New().String()
+
 	subject := ingenium.ExecutionEventType
-	return i.ec.Publish(subject, d)
+	return i.ec.Publish(subject, e)
 }

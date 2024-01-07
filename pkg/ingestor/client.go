@@ -5,9 +5,11 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	ingenium "github.com/markwinter/ingenium/pkg"
 	"github.com/nats-io/nats.go"
+	"github.com/segmentio/ksuid"
 )
 
 type IngestorClient struct {
@@ -61,7 +63,10 @@ func (i *IngestorClient) Close() {
 	i.nc.Close()
 }
 
-func (i *IngestorClient) SendDataEvent(d ingenium.DataEvent) error {
-	subject := strings.ToLower(fmt.Sprintf("%s.%s", ingenium.DataEventType, d.Symbol))
-	return i.ec.Publish(subject, d)
+func (i *IngestorClient) SendDataEvent(e ingenium.DataEvent) error {
+	e.Timestamp = time.Now()
+	e.Id = "data_" + ksuid.New().String()
+
+	subject := strings.ToLower(fmt.Sprintf("%s.%s", ingenium.DataEventType, e.Symbol))
+	return i.ec.Publish(subject, e)
 }
