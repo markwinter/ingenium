@@ -11,91 +11,8 @@ import (
 	alpaca "github.com/markwinter/ingenium/examples/ingestors/alpaca-historical"
 	exampleportfolio "github.com/markwinter/ingenium/examples/portfolios/example"
 	rsi "github.com/markwinter/ingenium/examples/strategies/rsi"
-	ingenium "github.com/markwinter/ingenium/pkg"
+	"github.com/markwinter/ingenium/pkg/backtest"
 )
-
-type DeploymentType string
-
-const (
-	DeploymentLocal DeploymentType = "local"
-	// DeploymentKube DeploymentType = "kube"
-)
-
-type Backtest struct {
-	Deployment DeploymentType
-	Ingestors  []ingenium.Ingestor
-	Strategies []ingenium.Strategy
-	Portfolio  ingenium.Portfolio
-	Executor   ingenium.Executor
-
-	printer EventPrinter
-}
-
-type BacktestOption func(*Backtest)
-
-func WithDeploymentType(t DeploymentType) BacktestOption {
-	return func(b *Backtest) {
-		b.Deployment = t
-	}
-}
-
-func WithIngestor(ingestor ingenium.Ingestor) BacktestOption {
-	return func(b *Backtest) {
-		b.Ingestors = append(b.Ingestors, ingestor)
-	}
-}
-
-func WithStrategy(strategy ingenium.Strategy) BacktestOption {
-	return func(b *Backtest) {
-		b.Strategies = append(b.Strategies, strategy)
-	}
-}
-
-func WithPortfolio(portfolio ingenium.Portfolio) BacktestOption {
-	return func(b *Backtest) {
-		b.Portfolio = portfolio
-	}
-}
-
-func WithExecutor(executor ingenium.Portfolio) BacktestOption {
-	return func(b *Backtest) {
-		b.Executor = executor
-	}
-}
-
-func NewBacktest(options ...BacktestOption) *Backtest {
-	b := &Backtest{
-		Deployment: DeploymentLocal,
-		printer:    MakeEventPrinter(),
-	}
-
-	for _, opt := range options {
-		opt(b)
-	}
-
-	return b
-}
-
-func (b *Backtest) Run() {
-	time.Sleep(2 * time.Second)
-
-	for _, ingestor := range b.Ingestors {
-		ingestor.IngestData()
-	}
-}
-
-func (b *Backtest) Cleanup() {
-	for _, ingestor := range b.Ingestors {
-		ingestor.Cleanup()
-	}
-
-	for _, strategy := range b.Strategies {
-		strategy.Cleanup()
-	}
-
-	b.Portfolio.Cleanup()
-	//b.Executor.Cleanup()
-}
 
 func main() {
 	err := godotenv.Load()
@@ -103,17 +20,20 @@ func main() {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
+	// prints all events ingenium.> to see in the console what happens during a backtest
+	_ = MakeEventPrinter()
+
 	dataStart := time.Date(2024, 01, 04, 04, 00, 00, 00, time.UTC)
 	dataEnd := time.Date(2024, 01, 04, 23, 00, 00, 00, time.UTC)
 
 	symbol := "CPNG"
 
-	backtest := NewBacktest(
+	backtest := backtest.NewBacktest(
 		// Run locally or deploy to kubernetes
-		WithDeploymentType(DeploymentLocal),
-		WithIngestor(alpaca.NewAlpacaHistoricalIngestor(symbol, dataStart, dataEnd, "1h")),
-		WithStrategy(rsi.NewRsiStrategy(symbol)),
-		WithPortfolio(exampleportfolio.NewPortfolio(1000)),
+		backtest.WithDeploymentType(backtest.DeploymentLocal),
+		backtest.WithIngestor(alpaca.NewAlpacaHistoricalIngestor(symbol, dataStart, dataEnd, "1h")),
+		backtest.WithStrategy(rsi.NewRsiStrategy(symbol)),
+		backtest.WithPortfolio(exampleportfolio.NewPortfolio(1000)),
 	)
 	defer backtest.Cleanup()
 
