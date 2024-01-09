@@ -58,7 +58,7 @@ type DataEvent struct {
 
 	Type   DataType
 	Symbol string
-	Ohlc   DataOhlc `json:",omitempty"`
+	Ohlc   *DataOhlc `json:",omitempty"`
 }
 
 type DataOhlc struct {
