@@ -1,6 +1,7 @@
 package ingestor
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -10,12 +11,25 @@ import (
 	ingenium "github.com/markwinter/ingenium/pkg"
 	"github.com/nats-io/nats.go"
 	"github.com/segmentio/ksuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+)
+
+const name = "ingenium"
+
+var (
+	tracer = otel.Tracer(name)
+	meter  = otel.Meter(name)
 )
 
 type IngestorClient struct {
 	natsServer string
 	nc         *nats.Conn
 	ec         *nats.EncodedConn
+
+	eventMeter   metric.Int64Counter
+	otelShutdown func(context.Context) error
 }
 
 type IngestorOption func(*IngestorClient)
@@ -28,6 +42,14 @@ func WithNatsServer(server string) IngestorOption {
 }
 
 func NewIngestorClient(opts ...IngestorOption) *IngestorClient {
+	ctx := context.Background()
+
+	// Set up OpenTelemetry.
+	otelShutdown, err := ingenium.SetupOTelSDK(ctx)
+	if err != nil {
+		return nil
+	}
+
 	var natsServer string
 
 	natsServer = os.Getenv("NATS_SERVER")
@@ -35,8 +57,12 @@ func NewIngestorClient(opts ...IngestorOption) *IngestorClient {
 		natsServer = nats.DefaultURL
 	}
 
+	em, _ := meter.Int64Counter("event.data.sent")
+
 	i := &IngestorClient{
-		natsServer: natsServer,
+		natsServer:   natsServer,
+		eventMeter:   em,
+		otelShutdown: otelShutdown,
 	}
 
 	for _, opt := range opts {
@@ -61,9 +87,19 @@ func NewIngestorClient(opts ...IngestorOption) *IngestorClient {
 func (i *IngestorClient) Close() {
 	i.ec.Close()
 	i.nc.Close()
+
+	_ = i.otelShutdown(context.Background())
 }
 
 func (i *IngestorClient) SendDataEvent(e ingenium.DataEvent) error {
+	ctx, span := tracer.Start(context.Background(), "event.data.send")
+	defer span.End()
+
+	eventAttr := attribute.String("event_id", e.Id)
+	span.SetAttributes(eventAttr)
+
+	i.eventMeter.Add(ctx, 1, metric.WithAttributes(eventAttr))
+
 	e.Timestamp = time.Now()
 	e.Id = "data_" + ksuid.New().String()
 

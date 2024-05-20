@@ -40,6 +40,8 @@ func (e *AlpacaExecutor) ReceiveOrder(order *ingenium.OrderEvent) {
 }
 
 func (e *AlpacaExecutor) tradeHandler(trade alpaca.TradeUpdate) {
+	log.Printf("trade event: %v\n", trade)
+
 	if trade.Event != "fill" {
 		return
 	}

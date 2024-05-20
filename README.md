@@ -168,8 +168,6 @@ type ExecutionEvent struct {
 
 ## Roadmap
 
-- Finish building examples of each component
-- Add component generators/functions to `/pkg`
-- Backtesting lib
 - A database component to record events, trades, portfolio data etc.
+- Simple telemetry to component clients
 - Allow deploys to local, or to Kube cluster (similar to [Service Weaver](https://serviceweaver.dev/))
