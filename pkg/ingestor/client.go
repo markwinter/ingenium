@@ -95,13 +95,13 @@ func (i *IngestorClient) SendDataEvent(e ingenium.DataEvent) error {
 	ctx, span := tracer.Start(context.Background(), "event.data.send")
 	defer span.End()
 
+	e.Timestamp = time.Now()
+	e.Id = "data_" + ksuid.New().String()
+
 	eventAttr := attribute.String("event_id", e.Id)
 	span.SetAttributes(eventAttr)
 
 	i.eventMeter.Add(ctx, 1, metric.WithAttributes(eventAttr))
-
-	e.Timestamp = time.Now()
-	e.Id = "data_" + ksuid.New().String()
 
 	subject := strings.ToLower(fmt.Sprintf("%s.%s", ingenium.DataEventType, e.Symbol))
 	return i.ec.Publish(subject, e)
